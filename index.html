@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TESE Manager</title><!-- v5.2 build:1776257741 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f2ee;--s1:#ffffff;--s2:#f8f6f2;--s3:#eeecea;--s4:#e4e2de;
+  --b1:#dedad4;--b2:#ccc8c0;--b3:#b8b4ac;
+  --t1:#1a1814;--t2:#3a3830;--t3:#6a6860;--t4:#9a9890;
+  --gold:#8a6a2a;--gold2:#6a4e1a;
+  --gbg:rgba(138,106,42,.08);--gbr:rgba(138,106,42,.25);
+  --gr:#2a7a4a;--grbg:rgba(42,122,74,.08);--grbr:rgba(42,122,74,.25);
+  --re:#aa3030;--rebg:rgba(170,48,48,.08);--rebr:rgba(170,48,48,.25);
+  --bl:#2a5a8a;--blbg:rgba(42,90,138,.08);--blbr:rgba(42,90,138,.25);
+  --or:#8a4a1a;--r:6px;--rl:10px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t1);min-height:100vh;font-size:14px;line-height:1.5}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:236px;flex-shrink:0;background:#f0ede8;border-right:1px solid var(--b2);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:50}
+.content{margin-left:236px;flex:1;padding:30px 38px 60px}
+.sb-logo{padding:20px 18px 14px;border-bottom:1px solid var(--b1)}
+.sb-logo-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--gold2);letter-spacing:.16em;text-transform:uppercase}
+.sb-logo-sub{font-family:monospace;font-size:8px;color:var(--t4);margin-top:2px;letter-spacing:.1em}
+.sb-saved{font-family:monospace;font-size:9px;color:#1a6a3a;margin-top:4px;opacity:0;transition:opacity .4s}
+.sb-saved.show{opacity:1}
+.sb-socs{padding:12px 18px;border-bottom:1px solid var(--b1)}
+.sb-socs-lbl{font-family:monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:8px}
+.soc-btn{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;border:1px solid transparent;transition:all .12s;margin-bottom:3px}
+.soc-btn:hover{background:var(--s2)}
+.soc-btn.active{background:var(--gbg);border-color:var(--gbr)}
+.soc-av{width:26px;height:26px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;flex-shrink:0}
+.av1{background:rgba(200,168,106,.15);color:var(--gold)}
+.av2{background:rgba(90,168,118,.15);color:var(--gr)}
+.av3{background:rgba(102,152,178,.15);color:var(--bl)}
+.av4{background:rgba(190,86,86,.15);color:var(--re)}
+.soc-info{flex:1;min-width:0}
+.soc-name{font-size:12px;font-weight:500;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.soc-btn.active .soc-name{color:var(--gold)}
+.soc-siret{font-family:monospace;font-size:8px;color:#7a7870}
+.btn-new-soc{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:var(--r);cursor:pointer;font-size:11px;color:var(--t4);border:1px dashed var(--b2);background:transparent;width:100%;font-family:'DM Sans',sans-serif;transition:all .12s;margin-top:4px}
+.btn-new-soc:hover{color:var(--gold);border-color:var(--gbr);background:var(--gbg)}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
+.nav-grp{font-family:monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:#9a9890;padding:12px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:8px 20px;cursor:pointer;color:#8a8880;font-size:12px;border-left:2px solid transparent;transition:all .12s}
+.nav-item:hover{color:var(--t2);background:var(--s2)}
+.nav-item.active{color:var(--gold2);background:rgba(138,106,42,.1);border-left-color:var(--gold2)}
+.nav-num{font-family:monospace;font-size:11px;min-width:14px}
+.nav-badge{margin-left:auto;background:var(--re);color:#fff;font-size:8px;padding:1px 4px;border-radius:6px;font-family:monospace}
+.sb-foot{padding:12px 18px;border-top:1px solid var(--b1);font-family:monospace;font-size:8px;color:#7a7870;display:flex;align-items:center;gap:5px}
+.sb-foot-dot{width:5px;height:5px;border-radius:50%;background:#1a6a3a;flex-shrink:0}
+.page{display:none}.page.active{display:block}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:24px}
+.page-head-l .page-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:-.02em}
+.page-head-l .page-sub{font-size:11px;color:var(--t3);margin-top:3px}
+.page-head-r{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 15px;border-radius:var(--r);font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;border:none;transition:all .12s;text-decoration:none;white-space:nowrap}
+.btn-gold{background:#8a6a2a;color:#fff}.btn-gold:hover{background:#6a4e1a}
+.btn-sec{background:#e8e6e0;color:#1a1814;border:1px solid var(--b2)}.btn-sec:hover{background:#dedad4}
+.btn-ghost{background:transparent;color:#5a5850;border:1px solid var(--b2)}.btn-ghost:hover{color:#3a3830;border-color:var(--b3)}
+.btn-danger{background:var(--rebg);color:var(--re);border:1px solid var(--rebr)}
+.btn-green{background:var(--grbg);color:var(--gr);border:1px solid var(--grbr)}
+.btn-sm{padding:5px 10px;font-size:11px}.btn-xs{padding:3px 7px;font-size:10px}
+.alert{padding:10px 13px;border-radius:var(--r);font-size:12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start;line-height:1.5}
+.alert-info{background:var(--blbg);border:1px solid var(--blbr);color:var(--bl)}
+.alert-warn{background:rgba(194,132,76,.08);border:1px solid rgba(194,132,76,.22);color:var(--or)}
+.alert-ok{background:var(--grbg);border:1px solid var(--grbr);color:var(--gr)}
+.alert-err{background:var(--rebg);border:1px solid var(--rebr);color:var(--re)}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--rl);margin-bottom:14px;overflow:hidden}
+.card-head{background:var(--s3);padding:10px 18px;border-bottom:1px solid var(--b2);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px}
+.card-num{width:18px;height:18px;border-radius:50%;background:var(--gbg);border:1px solid var(--gbr);display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--gold);font-weight:700}
+.card-body{padding:16px 18px;background:var(--s1)}
+.card-foot{background:var(--s3);border-top:1px solid var(--b2);padding:10px 18px;display:flex;gap:8px;align-items:center}
+.card-sect{background:#e8e6e0;padding:7px 18px;border-top:1px solid var(--b2);border-bottom:1px solid var(--b2);font-family:monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#4a4840;font-weight:600}
+/* FORM GRID */
+.fgrid{display:grid;gap:1px;background:var(--b1);border-top:1px solid var(--b1)}
+.fgrid.c1{grid-template-columns:1fr}
+.fgrid.c2{grid-template-columns:1fr 1fr}
+.fgrid.c3{grid-template-columns:1fr 1fr 1fr}
+.fgrid.c4{grid-template-columns:1fr 1fr 1fr 1fr}
+.span2{grid-column:span 2}.span3{grid-column:span 3}.span4{grid-column:span 4}
+.fc{background:var(--s1);display:flex;flex-direction:column;min-height:52px}
+.fc.calc{background:var(--s2)}
+.fc label{font-family:monospace;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:#6a6860;padding:7px 12px 2px;display:block;line-height:1}
+.fc label .req{color:var(--re)}
+.fc input,.fc select,.fc textarea{background:transparent;border:none;outline:none;color:var(--t1);font-size:13px;font-family:'DM Sans',sans-serif;padding:2px 12px 8px;line-height:1.4;flex:1}
+.fc input:focus,.fc select:focus{background:#eeecea}
+.fc input::placeholder{color:#aaa8a0;font-size:12px}
+.fc select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%233c3a36' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:26px}
+.fc select option,.fc select optgroup{background:#ffffff;color:#1a1814}
+.fc textarea{resize:vertical;min-height:56px}
+.fval{padding:2px 12px 8px;font-size:13px;color:#3a3830;line-height:1.4}
+.fval.gold{color:#7a5a1a;font-weight:600;font-family:monospace;font-size:12px}
+.fval.green{color:#1a6a3a;font-weight:600}
+.fval.red{color:var(--re)}
+.fval.mono{font-family:monospace;font-size:11px}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:99px;font-size:10px;font-family:monospace}
+.pill::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
+.pill-pend{background:rgba(138,74,26,.1);color:#7a3a0a;border:1px solid rgba(138,74,26,.3)}
+.pill-ok{background:rgba(42,122,74,.1);color:#1a5a2a;border:1px solid rgba(42,122,74,.3)}
+.pill-done{background:rgba(42,90,138,.1);color:#1a3a6a;border:1px solid rgba(42,90,138,.3)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.metric{background:var(--s1);border:1px solid var(--b2);border-radius:var(--r);padding:12px 14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.metric-lbl{font-family:monospace;font-size:9px;color:#7a7870;letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px}
+.metric-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#1a1814}
+.metric-val.g{color:var(--gold)}.metric-val.gr{color:var(--gr)}
+.tl{position:relative;padding-left:20px}
+.tl::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:1px;background:var(--b1)}
+.tl-item{position:relative;padding-bottom:14px}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{position:absolute;left:-18px;top:2px;width:7px;height:7px;border-radius:50%;border:2px solid var(--b2);background:var(--bg)}
+.tl-item.done .tl-dot{background:var(--gr);border-color:var(--gr)}
+.tl-item.curr .tl-dot{background:var(--gold);border-color:var(--gold)}
+.tl-t{font-size:12px;font-weight:500;margin-bottom:1px}
+.tl-s{font-size:10px;color:#7a7870}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.chip{display:inline-block;padding:2px 6px;background:#e8e6e0;border:1px solid var(--b2);border-radius:3px;font-family:monospace;font-size:9px;color:#5a5850}
+#toast{position:fixed;bottom:20px;right:20px;background:#2a2820;border:1px solid #4a4840;color:#f2ede2;border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--t1);display:none;z-index:999;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#toast.show{display:block;animation:tin .18s}
+@keyframes tin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#ffffff;border:1px solid var(--b2);box-shadow:0 8px 40px rgba(0,0,0,.15);border-radius:14px;width:560px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.modal-header{padding:18px 22px 0;display:flex;justify-content:space-between;align-items:center}
+.modal-header h2{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+.modal-close{background:none;border:none;color:var(--t3);font-size:18px;cursor:pointer;line-height:1;padding:2px 6px}
+.modal-close:hover{color:var(--t1)}
+.modal-body{padding:16px 22px 22px}
+.bulletin{background:#faf8f4;color:#18180e;border:1px solid #e0ddd6;border-radius:var(--rl);padding:24px 28px;font-size:11px;font-family:monospace;line-height:1.65}
+.bulletin h3{font-family:'Syne',sans-serif;font-size:13px;text-align:center;margin-bottom:16px;letter-spacing:.1em;text-transform:uppercase}
+.bul-head{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #ddd6c8;font-size:10px}
+.bul-table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:10px}
+.bul-table th{background:#eee8d8;padding:4px 8px;text-align:left;font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#888;font-weight:400}
+.bul-table td{padding:3px 8px;border-bottom:1px dashed #e2dbd0}
+.bul-table tr.total td{background:#e8e2d2;font-weight:700;border-bottom:none}
+.bul-net{background:#18180e;color:#f6f3ec;padding:9px 12px;border-radius:4px;display:flex;justify-content:space-between;font-weight:700;font-size:12px;margin-top:8px}
+.ck-item{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--b1)}
+.ck-item:last-child{border-bottom:none}
+.ck-box{width:16px;height:16px;border:1px solid var(--b2);border-radius:3px;flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .12s}
+.ck-box.on{background:var(--gold);border-color:var(--gold2);color:var(--bg)}
+.ck-lbl{font-size:12px;color:var(--t2)}.ck-lbl.on{color:var(--t4);text-decoration:line-through}
+.ck-sub{font-size:10px;color:#7a7870;margin-top:1px}
+.pay-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--b1)}
+.pay-row:last-child{border-bottom:none}
+.pay-org{font-size:12px;font-weight:500}.pay-sub{font-size:10px;color:var(--t4);margin-top:1px}
+.pay-amt{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--gold)}
+.pay-dt{font-family:monospace;font-size:9px;color:var(--t4);text-align:right;margin-top:1px}
+.dsn-blk{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:11px 13px;margin-bottom:8px}
+.dsn-tt{font-family:monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--t2);margin-bottom:6px}
+.dsn-r{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid var(--b1)}
+.dsn-r:last-child{border-bottom:none}
+.dsn-k{color:#b8b4aa}.dsn-v{font-family:monospace;font-size:10px;color:var(--t1)}
+
+/* ═══ RESPONSIVE MOBILE ═══ */
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:300;background:#ffffff;border:1px solid var(--b2);border-radius:var(--r);padding:8px 10px;cursor:pointer;color:var(--gold2);box-shadow:0 2px 8px rgba(0,0,0,.1);font-size:16px;line-height:1}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:49}
+
+@media(max-width:768px){
+  .hamburger{display:flex;align-items:center;justify-content:center}
+  .sidebar{transform:translateX(-100%);transition:transform .25s ease;z-index:200}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.open{display:block}
+  .content{margin-left:0;padding:14px 14px 80px}
+
+  /* Grilles en colonne sur mobile */
+  .fgrid.c2,.fgrid.c3,.fgrid.c4{grid-template-columns:1fr}
+  .fgrid.c2 .span2,.fgrid.c3 .span2,.fgrid.c3 .span3{grid-column:span 1}
+  .g2,.g3{grid-template-columns:1fr}
+  .metrics{grid-template-columns:1fr 1fr}
+
+  /* Page header en colonne */
+  .page-head{flex-direction:column;gap:10px}
+  .page-head-r{flex-wrap:wrap}
+
+  /* Cards */
+  .card-head{flex-wrap:wrap;gap:6px}
+  .card-foot{flex-wrap:wrap;gap:6px}
+
+  /* Bulletin */
+  .bul-head{grid-template-columns:1fr}
+
+  /* Modal plein écran */
+  .modal-box{width:100%;max-width:100%;border-radius:0;min-height:100vh;max-height:100vh}
+  .modal-overlay.show{align-items:flex-start}
+
+  /* Toast en bas centré */
+  #toast{left:14px;right:14px;max-width:none;bottom:14px;text-align:center}
+
+  /* Padding content quand sidebar fermée */
+  .content{padding-top:52px}
+}
+
+@media(max-width:480px){
+  .metrics{grid-template-columns:1fr}
+  .btn{font-size:11px;padding:7px 12px}
+  .page-head-l .page-title{font-size:15px}
+}
+</style>
+</head>
+<body>
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()">&#9776;</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">TESE Manager</div>
+    <div class="sb-logo-sub">Multi-societes · V5</div>
+    <div class="sb-saved" id="sb-saved">&#10003; Sauvegarde</div>
+  </div>
+  <div class="sb-socs">
+    <div class="sb-socs-lbl">Societes</div>
+    <div id="soc-list"></div>
+    <button class="btn-new-soc" onclick="openSocModal()">+ Ajouter une societe</button>
+  </div>
+  <nav class="sb-nav">
+    <div class="nav-grp">Tableau de bord</div>
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)"><span class="nav-num">&#9638;</span>Vue d'ensemble</div>
+    <div class="nav-grp">Processus TESE</div>
+    <div class="nav-item" data-page="activation" onclick="showPage('activation',this)"><span class="nav-num">&#9312;</span>Activation compte</div>
+    <div class="nav-item" data-page="salaries" onclick="showPage('salaries',this)"><span class="nav-num">&#9313;</span>Identification salaries</div>
+    <div class="nav-item" data-page="contrats" onclick="showPage('contrats',this)"><span class="nav-num">&#9314;</span>Contrats CDD</div>
+    <div class="nav-item" data-page="paie" onclick="showPage('paie',this)"><span class="nav-num">&#9315;</span>Volets sociaux <span class="nav-badge" id="badge-paie" style="display:none">!</span></div>
+    <div class="nav-item" data-page="bulletins" onclick="showPage('bulletins',this)"><span class="nav-num">&#9316;</span>Bulletins de paie</div>
+    <div class="nav-item" data-page="dsn" onclick="showPage('dsn',this)"><span class="nav-num">&#9317;</span>DSN</div>
+    <div class="nav-item" data-page="charges" onclick="showPage('charges',this)"><span class="nav-num">&#9318;</span>Charges</div>
+    <div class="nav-grp">Salaries permanents</div>
+    <div class="nav-item" data-page="cdi" onclick="showPage('cdi',this)"><span class="nav-num">&#9670;</span>Salaries CDI</div>
+    <div class="nav-grp">Outils</div>
+    <div class="nav-item" data-page="calendrier" onclick="showPage('calendrier',this)"><span class="nav-num">&#9643;</span>Calendrier RH</div>
+    <div class="nav-item" data-page="donnees" onclick="showPage('donnees',this)"><span class="nav-num">&#10303;</span>Donnees &amp; Export</div>
+  </nav>
+  <div class="sb-foot"><div class="sb-foot-dot"></div><span id="sb-info">localStorage actif</span></div>
+</aside>
+
+<!-- MODAL SOCIETE -->
+<div class="modal-overlay" id="modal-soc">
+  <div class="modal-box">
+    <div class="modal-header"><h2 id="modal-soc-title">Nouvelle societe</h2><button class="modal-close" onclick="closeSocModal()">&#10005;</button></div>
+    <div class="modal-body" id="modal-soc-body"></div>
+  </div>
+</div>
+
+<main class="content">
+<div id="toast"></div>
+<div id="page-dashboard" class="page active"></div>
+<div id="page-activation" class="page"></div>
+<div id="page-salaries" class="page"></div>
+<div id="page-contrats" class="page"></div>
+<div id="page-paie" class="page"></div>
+<div id="page-bulletins" class="page"></div>
+<div id="page-dsn" class="page"></div>
+<div id="page-charges" class="page"></div>
+<div id="page-calendrier" class="page"></div>
+<div id="page-donnees" class="page"></div>
+<div id="page-cdi" class="page"></div>
+</main>
+</div>
+<script>
+// ═══ CONSTANTES ═══
+var SK = 'tese_v5';
+var AVC = ['av1','av2','av3','av4'];
+
+var MOTIFS = {
+  'accroissement_temp':                 "Accroissement temporaire d'activite",
+  'accroissement_commande':             "Commande exceptionnelle a l'exportation",
+  'travaux_urgents':                    "Travaux urgents de securite",
+  'remplacement_absence':               "Remplacement d'un salarie absent",
+  'remplacement_temps_partiel':         "Remplacement - passage a temps partiel",
+  'remplacement_depart':                "Remplacement avant suppression de poste",
+  'remplacement_chef':                  "Remplacement chef d'entreprise / artisan",
+  'saisonnier':                         "Emploi saisonnier",
+  'usage_constant':                     "Secteur ou le CDD est l'usage constant",
+  'contrat_vendanges':                  "Contrat vendanges",
+  'insertion':                          "CDD d'insertion (CDD-I)",
+  'senior':                             "CDD senior (57 ans et plus)",
+  'accroissement':                      "Accroissement temporaire d'activite",
+  'remplacement':                       "Remplacement d'un salarie absent"
+};
+
+var NAF_LIST = [
+  {code:'5510Z', label:'Hotels et hebergement similaire'},
+  {code:'5520Z', label:'Hebergement touristique et autre'},
+  {code:'5610A', label:'Restauration traditionnelle'},
+  {code:'5610B', label:'Cafeterias et autres libres-services'},
+  {code:'5630Z', label:'Debit de boissons'},
+  {code:'6820A', label:'Location de logements'},
+  {code:'6820B', label:'Location terrains et logements autres'},
+  {code:'9001Z', label:'Arts du spectacle vivant'},
+  {code:'9329Z', label:'Autres activites recreatives'},
+  {code:'8299Z', label:'Autres activites de soutien aux entreprises'}
+];
+var CCN_LIST = [
+  {code:'1527', label:'Immobilier (IDCC 1527)'},
+  {code:'1979', label:'Commerce de detail non alimentaire'},
+  {code:'650',  label:'Metallurgie'},
+  {code:'1517', label:'Proprete'},
+  {code:'1501', label:'Restauration rapide'},
+  {code:'2941', label:'Aide a domicile'},
+  {code:'0044', label:'Industries alimentaires diverses'}
+];
+// Calcul des jours ouvrés (lundi-vendredi) entre deux dates incluses
+function joursOuvres(debut, fin) {
+  var d = new Date(debut), f = new Date(fin), count = 0;
+  d.setHours(0,0,0,0); f.setHours(0,0,0,0);
+  while (d <= f) {
+    var day = d.getDay();
+    if (day !== 0 && day !== 6) count++;
+    d.setDate(d.getDate() + 1);
+  }
+  return Math.max(1, count);
+}
+
+function nafLabel(code) {
+  if (!code) return '—';
+  var found = NAF_LIST.find(function(n){ return n.code===code; });
+  return found ? code + ' — ' + found.label : code;
+}
+function ccnLabel(code) {
+  if (!code) return '—';
+  var found = CCN_LIST.find(function(n){ return n.code===code; });
+  return found ? code + ' — ' + found.label : code;
+}
+var SST = {
+  'GIMS':      'GIMS - Groupement Interentreprises Medical du Sud (Marseille)',
+  'CIAMT':     'CIAMT - Centre Interentreprises Artisanal Med. Travail',
+  'AMETIF_13': 'AMETIF Provence - Service interentreprises 13',
+  'ASTMB':     'ASTMB - Assoc. Sante Travail Metropole Bouches-du-Rhone',
+  'CMIP':      'CMIP - Centre Medical Interentreprises de Provence',
+  'interne':   "Medecine interne a l'entreprise",
+  'autre':     'Autre service interentreprises'
+};
+
+var MONTCLAR = {
+  id:'SOC_MONTCLAR', raison:'Montclar SAS', siret:'38456635200033',
+  naf:'6820A', ccn:'1527', adresse:'6 rue Fonderie Vieille, 13002 Marseille',
+  prenom:'Nicolas', nom:'Tassy', email:'montclar@gmail.com',
+  tel:'0676668946', iban:'', sst:'GIMS', teseStatus:'non_active',
+  salaries:[], bulletins:[], volets:[], checklist:{}, cdi:[]
+};
+
+// ═══ BASE DE DONNEES ═══
+var db, curId;
+
+function loadDB() {
+  try {
+    var raw = localStorage.getItem(SK);
+    if (raw) { var d = JSON.parse(raw); return d; }
+  } catch(e) {}
+  return { curId:'SOC_MONTCLAR', societes:{ SOC_MONTCLAR: JSON.parse(JSON.stringify(MONTCLAR)) } };
+}
+
+function initDB() {
+  db = loadDB();
+  // Migration forcée Montclar — toujours corriger les données clés
+  if (db.societes && db.societes['SOC_MONTCLAR']) {
+    var m = db.societes['SOC_MONTCLAR'];
+    m.siret   = '38456635200033';
+    m.email   = 'montclar@gmail.com';
+    m.tel     = '0676668946';
+    m.naf = m.naf || '6820A';
+    m.ccn = '1527';
+    m.sst     = m.sst   || 'GIMS';
+    m.adresse = m.adresse || '6 rue Fonderie Vieille, 13002 Marseille';
+    m.prenom  = m.prenom  || 'Nicolas';
+    m.nom     = m.nom     || 'Tassy';
+    try { localStorage.setItem(SK, JSON.stringify(db)); } catch(e) {}
+  }
+  curId = db.curId || Object.keys(db.societes)[0] || null;
+}
+
+function save() {
+  db.curId = curId;
+  try {
+    localStorage.setItem(SK, JSON.stringify(db));
+    var el = document.getElementById('sb-saved');
+    if (el) { el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 1800); }
+  } catch(e) { toast('Erreur sauvegarde'); }
+  refreshInfo();
+}
+
+function getSoc(id) { return db.societes[id || curId]; }
+
+function refreshInfo() {
+  var raw = localStorage.getItem(SK) || '';
+  var kb = (raw.length/1024).toFixed(1);
+  var nb = Object.keys(db.societes).length;
+  var el = document.getElementById('sb-info');
+  if (el) el.textContent = nb + ' soc. - ' + kb + ' Ko';
+}
+
+// ═══ UTILITAIRES ═══
+function motifLabel(v) { return MOTIFS[v] || v || '—'; }
+
+// ═══ DICTIONNAIRES NAF / CCN ═══
+var NAF = {
+  '5510Z':'5510Z — Hotels et hebergement similaire',
+  '5520Z':'5520Z — Hebergement touristique et court sejour',
+  '5610A':'5610A — Restauration traditionnelle',
+  '5610B':'5610B — Cafeterias et libre-service',
+  '5630Z':'5630Z — Debits de boissons',
+  '9001Z':'9001Z — Arts du spectacle vivant',
+  '9002Z':'9002Z — Activites de soutien au spectacle vivant',
+  '6820A':'6820A — Location de logements',
+  '6820B':'6820B — Location de terrains et logements',
+  '6831Z':'6831Z — Agences immobilieres',
+  '4711A':'4711A — Commerce de detail alimentaire',
+  '4719A':'4719A — Commerce de detail general',
+  '7010Z':'7010Z — Activites des sieges sociaux',
+  '7022Z':'7022Z — Conseil pour les affaires et gestion',
+  '8010Z':'8010Z — Activites de securite privee',
+  'autre':'Autre code NAF'
+};
+var CCN = {
+  '1527':'1527 — Immobilier (IDCC 1527)',
+  '1979':'1979 — Commerce de detail non alimentaire',
+  '1090':'1090 — Tourisme social et familial',
+  '2578':'2578 — Espaces de loisirs, attractions et culturels',
+  '1351':'1351 — Restauration rapide',
+  '650': '650 — Metallurgie',
+  '16':  '16 — Transports routiers',
+  'autre':'Autre convention collective'
+};
+function nafLabel(v){ return NAF[v]||v||'—'; }
+function ccnLabel(v){ return CCN[v]||v||'—'; }
+
+
+function sstLabel(v) { return SST[v] || (v ? v : 'A renseigner'); }
+
+function h(tag, attrs, content) {
+  var a = '';
+  if (attrs) {
+    Object.keys(attrs).forEach(function(k) {
+      if (attrs[k] !== null && attrs[k] !== undefined) a += ' ' + k + '="' + attrs[k] + '"';
+    });
+  }
+  if (content === undefined) return '<' + tag + a + '>';
+  return '<' + tag + a + '>' + (content || '') + '</' + tag + '>';
+}
+
+function fc(labelTxt, content, cls) {
+  var req = labelTxt.indexOf('*') >= 0 ? labelTxt.replace('*','<span class="req">*</span>') : labelTxt;
+  return '<div class="fc' + (cls ? ' ' + cls : '') + '"><label>' + req + '</label>' + content + '</div>';
+}
+
+function fval(txt, cls) { return '<div class="fval' + (cls ? ' ' + cls : '') + '">' + (txt || '—') + '</div>'; }
+
+function finput(id, val, type, extra) {
+  type = type || 'text';
+  return '<input id="' + id + '" type="' + type + '" value="' + (val || '') + '"' + (extra || '') + '>';
+}
+
+function fselect(id, options, val, onchange) {
+  var opts = '';
+  if (Array.isArray(options)) {
+    options.forEach(function(o) {
+      var sel = (o.value === val) ? ' selected' : '';
+      opts += '<option value="' + o.value + '"' + sel + '>' + o.label + '</option>';
+    });
+  } else {
+    // grouped: { groupLabel: [ {value, label} ] }
+    Object.keys(options).forEach(function(grp) {
+      opts += '<optgroup label="' + grp + '">';
+      options[grp].forEach(function(o) {
+        var sel = (o.value === val) ? ' selected' : '';
+        opts += '<option value="' + o.value + '"' + sel + '>' + o.label + '</option>';
+      });
+      opts += '</optgroup>';
+    });
+  }
+  return '<select id="' + id + '"' + (onchange ? ' onchange="' + onchange + '"' : '') + '>' + opts + '</select>';
+}
+
+function toast(msg, d) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, d || 3000);
+}
+
+function pill(txt, cls) { return '<span class="pill ' + cls + '">' + txt + '</span>'; }
+function chip(txt) { return '<span class="chip">' + txt + '</span>'; }
+
+// ═══ NAVIGATION ═══
+function closeSidebarMobile() {
+  var sb = document.querySelector('.sidebar');
+  var ov = document.getElementById('sidebar-overlay');
+  // Fermer uniquement si le hamburger est visible (= mode mobile)
+  var hb = document.getElementById('hamburger');
+  if (hb && getComputedStyle(hb).display !== 'none') {
+    sb.classList.remove('open');
+    ov.classList.remove('open');
+  }
+}
+
+function toggleSidebar() {
+  var sb = document.querySelector('.sidebar');
+  var ov = document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('open');
+}
+
+function showPage(id, el) {
+  closeSidebarMobile();
+  document.querySelectorAll('.page').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+  var renders = {
+    dashboard: renderDashboard, activation: renderActivation,
+    salaries: renderSalaries, contrats: renderContrats, paie: renderPaie,
+    bulletins: renderBulletins, dsn: renderDSN, charges: renderCharges,
+    calendrier: renderCalendrier, donnees: renderDonnees, cdi: renderCDI
+  };
+  if (renders[id]) renders[id]();
+}
+
+function setPage(id) {
+  var el = document.querySelector('[data-page="' + id + '"]');
+  showPage(id, el);
+}
+
+function updateBadge() {
+  var soc = getSoc();
+  var b = document.getElementById('badge-paie');
+  if (!b) return;
+  b.style.display = (soc && soc.salaries.some(function(s){ return !s.voletValide; })) ? 'inline' : 'none';
+}
+
+// ═══ SOC LIST ═══
+function renderSocList() {
+  var el = document.getElementById('soc-list');
+  var socs = Object.values(db.societes);
+  if (!socs.length) { el.innerHTML = '<div style="font-size:10px;color:var(--t4);padding:3px 2px">Aucune societe</div>'; return; }
+  el.innerHTML = socs.map(function(s, i) {
+    var active = s.id === curId;
+    return '<div class="soc-btn' + (active ? ' active' : '') + '" onclick="switchSoc(\'' + s.id + '\')">'
+      + '<div class="soc-av ' + AVC[i % 4] + '">' + (s.raison || '?').substring(0,2).toUpperCase() + '</div>'
+      + '<div class="soc-info"><div class="soc-name">' + (s.raison || '—') + '</div>'
+      + '<div class="soc-siret">' + (s.siret ? s.siret.substring(0,9) + '...' : '—') + '</div></div>'
+      + (active ? '<button onclick="event.stopPropagation();openSocModal(\'' + s.id + '\')" style="background:none;border:none;cursor:pointer;color:var(--gold);font-size:11px;padding:2px 4px;line-height:1" title="Modifier la fiche">&#10000;</button>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function switchSoc(id) {
+  curId = id; save(); renderSocList();
+  var ap = document.querySelector('.nav-item.active');
+  if (ap) { var pid = ap.dataset.page; showPage(pid, ap); }
+  updateBadge();
+}
+
+// ═══ MODAL SOCIETE ═══
+var editSocId = null;
+
+function onNafSel() {
+  var sel = document.getElementById('ms-naf-sel');
+  var inp = document.getElementById('ms-naf');
+  if (sel && inp && sel.value) inp.value = sel.value;
+}
+function onCcnSel() {
+  var sel = document.getElementById('ms-ccn-sel');
+  var inp = document.getElementById('ms-ccn');
+  if (sel && inp && sel.value) inp.value = sel.value;
+}
+
+function openSocModal(id) {
+  editSocId = id || null;
+  var s = id ? getSoc(id) : null;
+  document.getElementById('modal-soc-title').textContent = s ? 'Modifier — ' + (s.raison||'Societe') : 'Nouvelle societe';
+
+  var sstOpts = '<option value="">— Aucun / Non affilie —</option>'
+    + '<option value="GIMS">GIMS — Groupement Interentreprises Medical du Sud (Marseille)</option>'
+    + '<option value="CIAMT">CIAMT — Centre Interentreprises Artisanal Med. Travail</option>'
+    + '<option value="AMETIF_13">AMETIF Provence — Service interentreprises 13</option>'
+    + '<option value="ASTMB">ASTMB — Assoc. Sante Travail Metropole Bouches-du-Rhone</option>'
+    + '<option value="CMIP">CMIP — Centre Medical Interentreprises de Provence</option>'
+    + '<option value="interne">Medecine interne a l&#39;entreprise</option>'
+    + '<option value="autre">Autre service interentreprises</option>';
+
+  var curSst = s ? (s.sst||'') : '';
+  var sstHtml = '<select id="ms-sst">' + sstOpts.replace('value="'+curSst+'"', 'value="'+curSst+'" selected') + '</select>';
+
+  var v = {
+    raison:      s ? (s.raison      || '') : '',
+    siret:       s ? (s.siret       || '') : '',
+    naf:         s ? (s.naf         || '') : '',
+    ccn:         s ? (s.ccn         || '') : '',
+    adresse:     s ? (s.adresse     || '') : '',
+    prenom:      s ? (s.prenom      || '') : '',
+    nom:         s ? (s.nom         || '') : '',
+    email:       s ? (s.email       || '') : '',
+    tel:         s ? (s.tel         || '') : '',
+    iban:        s ? (s.iban        || '') : '',
+    cab_nom:     s ? (s.cab_nom     || '') : '',
+    cab_contact: s ? (s.cab_contact || '') : '',
+    cab_email:   s ? (s.cab_email   || '') : '',
+    cab_tel:     s ? (s.cab_tel     || '') : ''
+  };
+
+  var body = '';
+  body += '<div class="card" style="margin-bottom:10px"><div class="card-head"><div class="card-title"><span class="card-num">A</span>Entreprise</div></div>';
+  body += '<div class="fgrid c2">';
+  body += fc('Raison sociale *', finput('ms-raison', v.raison, 'text', 'placeholder="ex. Montclar SAS"'));
+  body += fc('SIRET * (14 chiffres)', finput('ms-siret', v.siret, 'text', 'maxlength="14" placeholder="38456635200033" style="font-family:monospace;font-size:11px"'));
+  // NAF select + free text
+  var nafOptHtml = '<option value="">— Choisir —</option>';
+  Object.keys(NAF).forEach(function(k){ nafOptHtml += '<option value="' + k + '"' + (v.naf===k?' selected':'') + '>' + NAF[k] + '</option>'; });
+  body += '<div class="fc"><label>Code activite NAF/APE</label>'
+    + '<select id="ms-naf-sel" onchange="onNafSel()">' + nafOptHtml + '</select>'
+    + '<input id="ms-naf" type="text" value="' + v.naf + '" placeholder="ou saisir: 5510Z Hotels hebergement" style="margin-top:2px;font-size:11px">'
+    + '</div>';
+
+  // CCN select + free text
+  var ccnOptHtml = '<option value="">— Choisir —</option>';
+  Object.keys(CCN).forEach(function(k){ ccnOptHtml += '<option value="' + k + '"' + (v.ccn===k?' selected':'') + '>' + CCN[k] + '</option>'; });
+  body += '<div class="fc"><label>Convention collective (IDCC)</label>'
+    + '<select id="ms-ccn-sel" onchange="onCcnSel()">' + ccnOptHtml + '</select>'
+    + '<input id="ms-ccn" type="text" value="' + v.ccn + '" placeholder="ex. Immobilier IDCC 1527, ou saisir librement" style="margin-top:2px;font-size:11px">'
+    + '</div>';
+  body += '<div class="fc span2"><label>Adresse du siege social</label>' + finput('ms-adresse', v.adresse, 'text', 'placeholder="Numero, rue, code postal, ville"') + '</div>';
+  body += '</div></div>';
+
+  body += '<div class="card" style="margin-bottom:10px"><div class="card-head"><div class="card-title"><span class="card-num">B</span>Responsable des declarations TESE</div></div>';
+  body += '<div class="fgrid c2">';
+  body += fc('Prenom *', finput('ms-prenom', v.prenom, 'text', 'placeholder="Nicolas"'));
+  body += fc('Nom *', finput('ms-nom', v.nom, 'text', 'placeholder="Tassy"'));
+  body += fc('Email *', finput('ms-email', v.email, 'email', 'placeholder="montclar@gmail.com"'));
+  body += fc('Telephone', finput('ms-tel', v.tel, 'text', 'placeholder="0676668946"'));
+  body += '</div></div>';
+
+  body += '<div class="card" style="margin-bottom:10px"><div class="card-head"><div class="card-title"><span class="card-num">C</span>Coordonnees bancaires</div></div>';
+  body += '<div class="fgrid c2">';
+  body += '<div class="fc span2"><label>IBAN — compte pour prelevement automatique URSSAF</label>' + finput('ms-iban', v.iban, 'text', 'placeholder="FR76 XXXX XXXX XXXX XXXX XXXX XXX" style="font-family:monospace;font-size:11px"') + '</div>';
+  body += '</div></div>';
+
+  body += '<div class="card" style="margin-bottom:10px"><div class="card-head"><div class="card-title"><span class="card-num">D</span>Sante au travail</div></div>';
+  body += '<div class="fgrid c2">';
+  body += '<div class="fc span2"><label>Service de sante au travail</label>' + sstHtml + '</div>';
+  body += '</div></div>';
+
+  body += '<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title"><span class="card-num">D</span>Cabinet comptable &amp; gestion de la paie</div></div>';
+  body += '<div class="fgrid c2">';
+  body += fc('Nom du cabinet', finput('ms-cab-nom', v.cab_nom, 'text', 'placeholder="ex. Cabinet Durand Expertise Comptable"'));
+  body += fc('Contact / Gestionnaire paie', finput('ms-cab-contact', v.cab_contact, 'text', 'placeholder="ex. Marie Dupont"'));
+  body += fc('Email cabinet', finput('ms-cab-email', v.cab_email, 'email', 'placeholder="contact@cabinet.fr"'));
+  body += fc('Telephone cabinet', finput('ms-cab-tel', v.cab_tel, 'text', 'placeholder="04 XX XX XX XX"'));
+  body += '</div></div>';
+
+  body += '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">';
+  body += '<button class="btn btn-gold" onclick="saveSoc()">&#10003; Enregistrer</button>';
+  body += '<button class="btn btn-ghost" onclick="closeSocModal()">&#10005; Annuler</button>';
+  if (s && s.id !== 'SOC_MONTCLAR') {
+    body += '<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteSoc()">Supprimer cette societe</button>';
+  }
+  body += '</div>';
+
+  document.getElementById('modal-soc-body').innerHTML = body;
+  document.getElementById('modal-soc').classList.add('show');
+}
+
+function closeSocModal() { document.getElementById('modal-soc').classList.remove('show'); }
+
+function saveSoc() {
+  var raison = document.getElementById('ms-raison').value.trim();
+  var siret  = document.getElementById('ms-siret').value.trim();
+  var prenom = document.getElementById('ms-prenom').value.trim();
+  var nom    = document.getElementById('ms-nom').value.trim();
+  var email  = document.getElementById('ms-email').value.trim();
+  if (!raison || !siret || !prenom || !nom || !email) { toast('Remplissez les champs obligatoires *'); return; }
+  var id = editSocId || ('SOC' + Date.now().toString().slice(-7));
+  var ex = db.societes[id] || {};
+  db.societes[id] = {
+    id:id, raison:raison, siret:siret,
+    naf: (document.getElementById('ms-naf')||{}).value||'',
+    ccn: (document.getElementById('ms-ccn')||{}).value||'',
+    adresse:     document.getElementById('ms-adresse').value,
+    prenom:prenom, nom:nom, email:email,
+    tel:         document.getElementById('ms-tel').value,
+    iban:        document.getElementById('ms-iban').value,
+    sst:         document.getElementById('ms-sst').value,
+    cab_nom:     document.getElementById('ms-cab-nom').value,
+    cab_contact: document.getElementById('ms-cab-contact').value,
+    cab_email:   document.getElementById('ms-cab-email').value,
+    cab_tel:     document.getElementById('ms-cab-tel').value,
+    teseStatus: ex.teseStatus || 'non_active',
+    salaries:   ex.salaries   || [],
+    bulletins:  ex.bulletins  || [],
+    volets:     ex.volets     || [],
+    checklist:  ex.checklist  || {},
+    dsnTransmise: ex.dsnTransmise || false,
+    dsnDate:    ex.dsnDate    || '',
+    cdi:        ex.cdi        || []
+  };
+  if (!curId) curId = id;
+  save(); closeSocModal(); renderSocList(); renderDashboard();
+  toast(raison + ' enregistree');
+}
+
+function deleteSoc() {
+  var s = getSoc(editSocId);
+  if (!s) return;
+  if (!confirm('Supprimer ' + s.raison + ' et toutes ses donnees ?')) return;
+  delete db.societes[editSocId];
+  if (curId === editSocId) curId = Object.keys(db.societes)[0] || null;
+  save(); closeSocModal(); renderSocList(); renderDashboard();
+  toast('Societe supprimee');
+}
+
+// ═══ DASHBOARD ═══
+function renderDashboard() {
+  var soc = getSoc();
+  var body = document.getElementById('page-dashboard');
+  var html = '<div class="page-head"><div class="page-head-l"><div class="page-title">' + (soc ? soc.raison : 'Vue d\'ensemble') + '</div>'
+    + '<div class="page-sub">' + (soc ? 'SIRET : ' + (soc.siret||'—') : 'Selectionnez ou creez une societe') + '</div></div>'
+    + '<div class="page-head-r">'
+    + '<button class="btn btn-ghost btn-sm" onclick="clearAll()" title="Reinitialiser les donnees">&#8635; Reset</button>'
+    + '<button class="btn btn-sec btn-sm" onclick="pdfDashboard()">&#9156; PDF</button></div></div>';
+
+  if (!soc) {
+    html += '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Cliquez sur <strong style="color:var(--gold)">+ Ajouter une societe</strong> pour commencer.</div></div>';
+    body.innerHTML = html; return;
+  }
+
+  var tb = soc.salaries.reduce(function(a,s){ return a+(s.brut||0); }, 0);
+  var tLabels = {non_active:'Non active', en_cours:'En cours', actif:'Actif'};
+  var ccnLabels = {'1527':'Immobilier (IDCC 1527)','1979':'Commerce de detail (1979)','650':'Metallurgie (650)','autre':'Autre'};
+
+  html += '<div class="metrics">'
+    + '<div class="metric"><div class="metric-lbl">Statut TESE</div><div class="metric-val g" style="font-size:14px;margin-top:4px">' + (tLabels[soc.teseStatus]||'—') + '</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Salaries</div><div class="metric-val gr">' + soc.salaries.length + '</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Bulletins</div><div class="metric-val">' + soc.bulletins.length + '</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Charges est.</div><div class="metric-val g">' + (tb*0.45).toFixed(0) + ' &euro;</div></div>'
+    + '</div>';
+
+  // Bloc CDI dans dashboard
+  var cdiList = soc.cdi || [];
+  var masseCDI = cdiList.reduce(function(a,s){ return a+(s.brut||0); }, 0);
+  var masseCDD = soc.salaries.reduce(function(a,s){ return a+(s.brut||0); }, 0);
+  var masseTotal = masseCDI + masseCDD;
+
+  // Ajouter métrique masse totale
+  html = html.replace(
+    '<div class="metric"><div class="metric-lbl">Charges est.</div><div class="metric-val g">' + (tb*0.45).toFixed(0) + ' &euro;</div></div>',
+    '<div class="metric"><div class="metric-lbl">Charges est. CDD</div><div class="metric-val g">' + (tb*0.45).toFixed(0) + ' &euro;</div></div>'
+  );
+
+  // Ajouter résumé CDI si présents
+  if (cdiList.length) {
+    html += '<div class="alert alert-info" style="margin-bottom:14px"><span>&#9670;</span><span>'
+      + cdiList.length + ' salarie(s) CDI — masse brute mensuelle : <strong>' + masseCDI.toFixed(0) + ' &euro;</strong>'
+      + ' — gere par ' + (soc.cab_nom || 'le cabinet comptable') + '</span></div>';
+  }
+
+  // Fiche société toujours visible
+  html += '<div class="card" style="margin-bottom:14px">'
+    + '<div class="card-head"><div class="card-title">Fiche societe active</div>'
+    + '<button class="btn btn-gold btn-sm" onclick="openSocModal(\'' + soc.id + '\')">&#10000; Modifier</button></div>'
+    + '<div class="fgrid c2" style="border-top:1px solid var(--b1)">'
+    + fc('Raison sociale', fval(soc.raison, 'gold'))
+    + fc('SIRET', fval(soc.siret, 'gold mono'))
+    + fc('Code activite NAF/APE', fval(nafLabel(soc.naf)))
+    + fc('Convention collective', fval(ccnLabel(soc.ccn)))
+    + fc('Adresse', fval(soc.adresse || '—'))
+    + fc('Responsable', fval((soc.prenom||'') + ' ' + (soc.nom||'')))
+    + fc('Email', fval(soc.email || '—'))
+    + fc('Telephone', fval(soc.tel || '—'))
+    + fc('Sante au travail', fval(sstLabel(soc.sst)))
+    + fc('IBAN', fval(soc.iban || 'A renseigner', soc.iban ? 'mono' : ''))
+    + (soc.cab_nom ? fc('Cabinet comptable', fval(soc.cab_nom)) + fc('Contact paie', fval((soc.cab_contact||'') + (soc.cab_tel ? ' — ' + soc.cab_tel : ''))) : '')
+    + '</div></div>';
+
+  var ha = soc.teseStatus !== 'non_active';
+  var hs = soc.salaries.length > 0;
+  var hv = (soc.volets||[]).length > 0;
+  var hb = soc.bulletins.length > 0;
+  var ab = hs && soc.salaries.every(function(s){ return s.voletValide; });
+
+  var steps = [
+    {t:'Activation compte TESE', s:'letese.urssaf.fr', st: ha?'done':'curr'},
+    {t:'Identification salaries', s:'DPAE automatique', st: !ha?'':hs?'done':'curr'},
+    {t:'Saisie volets sociaux', s:'Heures, remuneration', st: !hs?'':hv?'done':'curr'},
+    {t:'Bulletins de paie', s:'Generes J+1', st: !hv?'':hb?'done':'curr'},
+    {t:'DSN mensuelle', s:'Transmission auto', st: !hb?'':ab?'done':'curr'},
+    {t:'Paiement charges', s:'Prelevement le 15', st: ab?'curr':''}
+  ];
+  var tlHtml = steps.map(function(s){
+    return '<div class="tl-item ' + s.st + '"><div class="tl-dot"></div><div class="tl-t">' + s.t + '</div><div class="tl-s">' + s.s + '</div></div>';
+  }).join('');
+
+  var alerts = '';
+  if (!ha) alerts += '<div class="alert alert-info"><span>&#8594;</span><span>Completez l\'activation du compte TESE.</span></div>';
+  else if (soc.teseStatus === 'en_cours') alerts += '<div class="alert alert-warn"><span>&#9203;</span><span>Compte en traitement URSSAF (4-6 sem.). Faites les DPAE sur net-entreprises.fr.</span></div>';
+  var ns = soc.salaries.filter(function(s){ return !s.voletValide; });
+  if (hs && ns.length) alerts += '<div class="alert alert-warn"><span>&#9888;</span><span>' + ns.length + ' volet(s) a saisir avant le 5 du mois.</span></div>';
+  if (ab && hb) alerts += '<div class="alert alert-ok"><span>&#10003;</span><span>Tous les bulletins emis.</span></div>';
+  if (!alerts) alerts = '<div style="font-size:12px;color:var(--t4)">Aucune alerte.</div>';
+
+  var now = new Date(), echs = [];
+  soc.salaries.forEach(function(s){
+    var le5 = new Date(new Date(s.fin).getFullYear(), new Date(s.fin).getMonth()+1, 5);
+    if (le5 > now) echs.push({d:le5, l:'Volet ' + s.prenom + ' ' + s.nom});
+  });
+  echs.sort(function(a,b){ return a.d-b.d; });
+  var echHtml = echs.slice(0,4).map(function(e){
+    return '<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px"><span style="color:var(--t2)">' + e.l + '</span><span style="font-family:\'DM Mono\',monospace;color:var(--or)">' + e.d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) + '</span></div>';
+  }).join('') || '<div style="font-size:11px;color:var(--t4)">Aucune echeance imminente.</div>';
+
+  html += '<div class="g2">'
+    + '<div class="card"><div class="card-head"><div class="card-title">Progression TESE</div></div><div class="card-body"><div class="tl">' + tlHtml + '</div></div></div>'
+    + '<div>'
+    + '<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title">Alertes</div></div><div class="card-body">' + alerts + '</div></div>'
+    + '<div class="card"><div class="card-head"><div class="card-title">Prochaines echeances</div></div><div class="card-body">' + echHtml + '</div></div>'
+    + '</div></div>';
+
+  var socs = Object.values(db.societes);
+  var rows = socs.map(function(s, i){
+    var tb2 = s.salaries.reduce(function(a,x){ return a+(x.brut||0); }, 0);
+    var isActive = s.id === curId;
+    return '<tr onclick="switchSoc(\'' + s.id + '\')" style="cursor:pointer;' + (isActive?'background:var(--gbg)':'') + '">'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--b1)">'
+      + '<div style="display:flex;align-items:center;gap:7px">'
+      + '<div class="soc-av ' + AVC[i%4] + '" style="width:20px;height:20px;font-size:8px">' + s.raison.substring(0,2).toUpperCase() + '</div>'
+      + '<strong>' + s.raison + '</strong>'
+      + (isActive ? ' <span style="font-size:9px;color:var(--gold)">&#9679; active</span>' : '')
+      + '</div></td>'
+      + '<td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--t3);border-bottom:1px solid var(--b1)">' + (s.siret||'—') + '</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--b1)">' + pill(tLabels[s.teseStatus]||'—', s.teseStatus==='actif'?'pill-ok':'pill-pend') + '</td>'
+      + '<td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:11px;border-bottom:1px solid var(--b1)">' + s.salaries.length + '</td>'
+      + '<td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:11px;border-bottom:1px solid var(--b1)">' + s.bulletins.length + '</td>'
+      + '<td style="padding:9px 12px;font-family:\'DM Mono\',monospace;font-size:11px;color:var(--gold);border-bottom:1px solid var(--b1)">' + (tb2*0.45).toFixed(0) + ' &euro;</td>'
+      + '<td style="padding:9px 12px;border-bottom:1px solid var(--b1)">'
+      + '<button class="btn btn-sec btn-xs" onclick="event.stopPropagation();openSocModal(\'' + s.id + '\')">&#10000;</button></td></tr>';
+  }).join('');
+
+  html += '<div class="card" style="margin-top:14px">'
+    + '<div class="card-head"><div class="card-title">Gestion des societes</div>'
+    + '<button class="btn btn-gold btn-sm" onclick="openSocModal()">+ Ajouter une societe</button></div>'
+    + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'
+    + '<thead><tr>' + ['Societe','SIRET','TESE','Sal.','Bul.','Charges est.',''].map(function(h){ return '<th style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--t4);padding:8px 12px;text-align:left;border-bottom:1px solid var(--b1)">' + h + '</th>'; }).join('') + '</tr></thead>'
+    + '<tbody>' + rows + '</tbody></table></div></div>';
+  body.innerHTML = html;
+}
+
+// ═══ ACTIVATION ═══
+function renderActivation() {
+  var soc = getSoc();
+  var body = document.getElementById('page-activation');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9312; Activation du compte TESE</div><div class="page-sub">Dossier d\'inscription sur letese.urssaf.fr</div></div>'
+    + '<div class="page-head-r"><a href="https://letese.urssaf.fr" target="_blank" class="btn btn-sec btn-sm">&#8599; letese.urssaf.fr</a>'
+    + '<button class="btn btn-ghost btn-sm" onclick="openSocModal(curId)">&#10000; Modifier fiche</button>'
+    + '<button class="btn btn-sec btn-sm" onclick="pdfActivation()">&#9156; PDF</button></div></div>';
+
+  if (!soc) { body.innerHTML = hdr + '<div class="alert alert-warn"><span>&#9888;</span><span>Selectionnez une societe.</span></div>'; return; }
+
+  var stPill = {
+    non_active: pill('Non active','pill-pend'),
+    en_cours: pill('En cours de traitement','pill-pend'),
+    actif: pill('Compte actif','pill-ok')
+  };
+  var ck = soc.checklist || {};
+  var cks = [
+    {k:'c0', l:"Verifier l'eligibilite au regime general (hors agricole)", d:'Avant inscription'},
+    {k:'c1', l:'Preparer SIRET, IBAN, convention collective', d:'Saisie en une seule fois'},
+    {k:'c2', l:'Soumettre le formulaire sur letese.urssaf.fr', d:'Delai 4-6 semaines'},
+    {k:'c3', l:"Recevoir la confirmation d'activation URSSAF", d:'J+30 a J+42 estime'},
+    {k:'c4', l:'En attente : DPAE manuelles sur net-entreprises.fr', d:'Obligatoire avant tout debut'}
+  ];
+
+  var html = hdr;
+  html += '<div class="alert alert-warn"><span>&#9203;</span><span>Delai URSSAF : <strong>4 a 6 semaines</strong> apres soumission. Saisie en <strong>une seule fois</strong>, sans enregistrement intermediaire.</span></div>';
+
+  html += '<div class="card"><div class="card-head"><div class="card-title"><span class="card-num">A</span>Identification de l\'entreprise</div>'
+    + '<button class="btn btn-gold btn-sm" onclick="openSocModal(\'' + soc.id + '\')">&#10000; Modifier la fiche societe</button></div>';
+  html += '<div class="fgrid c2">';
+  html += fc('Raison sociale', fval(soc.raison, 'gold'));
+  html += fc('SIRET', fval(soc.siret, 'gold mono'));
+  html += fc('Code activite NAF/APE', fval(nafLabel(soc.naf)));
+  html += fc('Convention collective', fval(ccnLabel(soc.ccn)));
+  html += '<div class="fc span2"><label>Adresse siege social</label>' + fval(soc.adresse || '—') + '</div>';
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="card-head"><div class="card-title"><span class="card-num">B</span>Responsable des declarations</div></div>';
+  html += '<div class="fgrid c2">';
+  html += fc('Prenom', fval(soc.prenom));
+  html += fc('Nom', fval(soc.nom));
+  html += fc('Email', fval(soc.email));
+  html += fc('Telephone', fval(soc.tel));
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="card-head"><div class="card-title"><span class="card-num">C</span>Coordonnees bancaires &amp; Sante au travail</div></div>';
+  html += '<div class="fgrid c2">';
+  html += '<div class="fc span2"><label>IBAN titulaire du compte</label>' + fval(soc.iban || 'A renseigner dans la fiche societe', 'gold') + '</div>';
+  html += fc('Service de sante au travail', fval(sstLabel(soc.sst)));
+  html += fc('Statut du compte TESE', '<div style="padding:4px 12px 8px">' + (stPill[soc.teseStatus]||'—') + '</div>');
+  html += '</div>';
+  html += '<div class="card-foot">';
+  if (soc.teseStatus === 'non_active') html += '<button class="btn btn-gold btn-sm" onclick="setTeseStatus(\'en_cours\')">&#8594; Marquer comme soumis a l\'URSSAF</button>';
+  if (soc.teseStatus === 'en_cours') html += '<button class="btn btn-gold btn-sm" onclick="setTeseStatus(\'actif\')">&#10003; Marquer comme active</button>';
+  if (soc.teseStatus === 'actif') html += pill('Compte actif &#10003;','pill-ok');
+  html += '</div></div>';
+
+  html += '<div class="card"><div class="card-head"><div class="card-title"><span class="card-num">D</span>Checklist d\'adhesion</div></div><div class="card-body">';
+  cks.forEach(function(c) {
+    var on = ck[c.k];
+    html += '<div class="ck-item"><div class="ck-box' + (on?' on':'') + '" onclick="toggleCk(\'' + c.k + '\',this)">' + (on?'&#10003;':'') + '</div>'
+      + '<div><div class="ck-lbl' + (on?' on':'') + '">' + c.l + '</div><div class="ck-sub">' + c.d + '</div></div></div>';
+  });
+  html += '</div></div>';
+  body.innerHTML = html;
+}
+
+function setTeseStatus(st) {
+  var soc = getSoc(); if (!soc) return;
+  soc.teseStatus = st; save(); renderActivation(); renderDashboard();
+  toast(st==='en_cours' ? 'Dossier marque comme soumis' : 'Compte TESE marque comme actif');
+}
+
+function toggleCk(k, el) {
+  var soc = getSoc(); if (!soc) return;
+  soc.checklist[k] = !soc.checklist[k];
+  el.classList.toggle('on', soc.checklist[k]);
+  el.innerHTML = soc.checklist[k] ? '&#10003;' : '';
+  var lbl = el.parentElement.querySelector('.ck-lbl');
+  if (lbl) lbl.classList.toggle('on', soc.checklist[k]);
+  save();
+}
+
+// ═══ SALARIES ═══
+function renderSalaries() {
+  var soc = getSoc();
+  var body = document.getElementById('page-salaries');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9313; Identification des salaries</div><div class="page-sub">Volet d\'identification TESE — vaut DPAE + contrat de travail</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfSalaries()">&#9156; PDF</button>'
+    + '<button class="btn btn-gold btn-sm" onclick="ajouterSalarie()">+ Nouveau salarie</button></div></div>'
+    + '<div class="alert alert-info"><span>&#9432;</span><span>Transmettez ce volet <strong>au moins 8 jours avant</strong> le debut de mission. Le TESE genere la DPAE automatiquement.</span></div>';
+
+  if (!soc) { body.innerHTML = hdr + '<div class="alert alert-warn"><span>&#9888;</span><span>Selectionnez une societe.</span></div>'; return; }
+
+  var content = '';
+  if (!soc.salaries.length) {
+    content = '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Aucun salarie — cliquez sur <strong style="color:var(--gold)">+ Nouveau salarie</strong></div></div>';
+  } else {
+    soc.salaries.forEach(function(s, i) { content += buildSalCard(s, i); });
+  }
+  body.innerHTML = hdr + content;
+}
+
+function buildSalCard(s, idx) {
+  var motifOptsVide = '<option value="">— Selectionner le motif —</option>';
+  var motifOpts = {
+    'Accroissement d\'activite': [
+      {value:'accroissement_temp',    label:"Accroissement temporaire d'activite"},
+      {value:'accroissement_commande',label:"Commande exceptionnelle a l'exportation"},
+      {value:'travaux_urgents',       label:"Travaux urgents de securite"}
+    ],
+    'Remplacement': [
+      {value:'remplacement_absence',         label:"Remplacement d'un salarie absent"},
+      {value:'remplacement_temps_partiel',   label:"Remplacement — passage a temps partiel"},
+      {value:'remplacement_depart',          label:"Remplacement avant suppression de poste"},
+      {value:'remplacement_chef',            label:"Remplacement chef d'entreprise / artisan"}
+    ],
+    'Emplois specifiques': [
+      {value:'saisonnier',        label:"Emploi saisonnier"},
+      {value:'usage_constant',    label:"Secteur ou le CDD est l'usage constant"},
+      {value:'contrat_vendanges', label:"Contrat vendanges"}
+    ],
+    'Politique emploi': [
+      {value:'insertion', label:"CDD d'insertion (CDD-I)"},
+      {value:'senior',    label:"CDD senior (57 ans et plus)"}
+    ]
+  };
+  var sid = s.id;
+  var brut = s.brut || 0;
+  var brutDisplay = brut > 0 ? brut.toFixed(2) + ' &euro;' : '—';
+  var netDisplay = brut > 0 ? (brut*0.7718).toFixed(2) + ' &euro;' : '—';
+  var statusPill = s.voletValide ? pill('Volet saisi','pill-ok') : pill('DPAE transmise','pill-pend');
+
+  var html = '<div class="card" id="sal-' + sid + '" style="' + (s.voletValide?'border-color:var(--grbr)':'') + '">';
+  html += '<form autocomplete="off" style="display:contents" onsubmit="return false">';
+  html += '<div class="card-head">';
+  html += '<div class="card-title"><span class="card-num">' + (idx+1) + '</span>' + (s.prenom||'Nouveau') + ' ' + (s.nom||'salarie') + (s.poste ? chip(s.poste) : '') + statusPill + '</div>';
+  html += '<div style="display:flex;gap:7px"><span style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--t3)">' + s.debut + ' &#8594; ' + s.fin + '</span>'
+    + '<button class="btn btn-danger btn-xs" data-id="' + sid + '" onclick="supprimerSalarie(this.dataset.id)">&#10005;</button></div>';
+  html += '</div>';
+
+  html += '<div class="card-sect">A — Identite</div>';
+  html += '<div class="fgrid c2" autocomplete="off">';
+  html += '<div class="fc"><label>Nom <span class="req">*</span></label><input value="' + (s.nom||'') + '" onchange="uSal(\'' + sid + '\',\'nom\',this.value)" placeholder="DUPONT"></div>';
+  html += '<div class="fc"><label>Prenom <span class="req">*</span></label><input value="' + (s.prenom||'') + '" onchange="uSal(\'' + sid + '\',\'prenom\',this.value)" placeholder="Jean"></div>';
+  var ddnParts = (s.ddn||'').split('-');
+  var ddnAn = ddnParts[0]||'', ddnMois = ddnParts[1]||'', ddnJour = ddnParts[2]||'';
+  var ddnStyle = 'background:transparent;border:none;border-bottom:1px solid var(--b2);outline:none;color:var(--t1);font-size:12px;font-family:monospace;text-align:center;padding:1px 2px';
+  html += '<div class="fc"><label>Date de naissance</label>'
+    + '<div style="display:flex;gap:3px;padding:4px 10px 7px;align-items:center">'
+    + '<input type="number" id="ddn-j-'+sid+'" value="'+ddnJour+'" min="1" max="31" placeholder="JJ" style="width:28px;'+ddnStyle+'" onchange="uSalDDN(\''+sid+'\')">'
+    + '<span style="color:var(--t4);font-size:11px">/</span>'
+    + '<input type="number" id="ddn-m-'+sid+'" value="'+ddnMois+'" min="1" max="12" placeholder="MM" style="width:28px;'+ddnStyle+'" onchange="uSalDDN(\''+sid+'\')">'
+    + '<span style="color:var(--t4);font-size:11px">/</span>'
+    + '<input type="number" id="ddn-a-'+sid+'" value="'+ddnAn+'" min="1900" max="2010" placeholder="AAAA" style="width:46px;'+ddnStyle+'" onchange="uSalDDN(\''+sid+'\')">'
+    + '</div></div>';
+  html += '<div class="fc"><label>Lieu de naissance</label><input value="' + (s.lieu||'') + '" onchange="uSal(\'' + sid + '\',\'lieu\',this.value)" placeholder="Paris"></div>';
+  html += '<div class="fc"><label>NIR — N&#176; Securite Sociale <span class="req">*</span></label><input value="' + (s.nir||'') + '" onchange="uSal(\'' + sid + '\',\'nir\',this.value)" placeholder="1 XX XX XX XXX XXX XX" style="font-family:\'DM Mono\',monospace;font-size:11px" maxlength="21"></div>';
+  var natList = ['Francaise','Algerienne','Marocaine','Tunisienne','Italienne','Espagnole','Portugaise','Britannique','Americaine','Autre'];
+  var natSel = '<select onchange="uSal(\'' + sid + '\',\'nat\',this.value)"><option value="">— Selectionner —</option>';
+  natList.forEach(function(n){ var sel=(s.nat===n)?' selected':''; natSel += '<option value="'+n+'"'+sel+'>'+n+'</option>'; });
+  natSel += '</select>';
+  html += '<div class="fc"><label>Nationalite</label>' + natSel + '</div>';
+  html += '</div>';
+
+  html += '<div class="card-sect">B — Coordonnees</div>';
+  html += '<div class="fgrid c2">';
+  html += '<div class="fc span2"><label>Adresse complete</label><input value="' + (s.adresse||'') + '" onchange="uSal(\'' + sid + '\',\'adresse\',this.value)" placeholder="Numero, rue, CP, ville"></div>';
+  html += '<div class="fc"><label>Email</label><input type="email" value="' + (s.email||'') + '" onchange="uSal(\'' + sid + '\',\'email\',this.value)"></div>';
+  html += '<div class="fc"><label>IBAN salarie</label><input value="' + (s.iban||'') + '" onchange="uSal(\'' + sid + '\',\'iban\',this.value)" placeholder="FR76 ..." style="font-family:\'DM Mono\',monospace;font-size:11px"></div>';
+  html += '</div>';
+
+  html += '<div class="card-sect">C — Conditions d\'emploi</div>';
+  html += '<div class="fgrid c2">';
+  html += '<div class="fc"><label>Qualification / Poste <span class="req">*</span></label><input value="' + (s.poste||'') + '" onchange="uSal(\'' + sid + '\',\'poste\',this.value)" placeholder="Agent d\'accueil"></div>';
+  html += '<div class="fc"><label>Motif CDD <span class="req">*</span></label>' + fselect('mot-' + sid, motifOpts, s.motif||'', 'uSal(\'' + sid + '\',\'motif\',this.value)') + '</div>';
+  html += '<div class="fc"><label>Date debut <span class="req">*</span></label><input type="date" value="' + (s.debut||'') + '" onchange="uSalCalc(\'' + sid + '\',\'debut\',this.value)"></div>';
+  html += '<div class="fc"><label>Date fin <span class="req">*</span></label><input type="date" value="' + (s.fin||'') + '" onchange="uSalCalc(\'' + sid + '\',\'fin\',this.value)"></div>';
+  html += '<div class="fc"><label>Taux horaire brut (&euro;) <span class="req">*</span></label><input type="number" min="11.88" step="0.5" value="' + (s.taux||'') + '" onchange="uSalCalc(\'' + sid + '\',\'taux\',this.value)"></div>';
+  html += '<div class="fc"><label>Heures par jour</label><input type="number" min="1" max="10" value="' + (s.hj===''||s.hj===undefined||s.hj===null?'':s.hj) + '" placeholder="7" onchange="uSalCalc(\'' + sid + '\',\'hj\',this.value)"></div>';
+  // Convention collective et médecine du travail issues de la fiche société (lecture seule)
+  var socCur = getSoc();
+  html += '<div class="fc"><label>Convention collective</label><div class="fval" style="color:var(--gold)">' + ccnLabel(socCur&&socCur.ccn) + '</div></div>';
+  html += '<div class="fc"><label>Medecine du travail (fiche societe)</label><div class="fval" style="color:var(--gold)">' + sstLabel(socCur&&socCur.sst) + '</div></div>';
+  html += '</div>';
+
+  html += '<div class="card-sect">D — Recapitulatif calcule</div>';
+  html += '<div class="fgrid c3">';
+  html += '<div class="fc calc"><label>Nb jours ouvres travailles</label><div class="fval gold" id="sj-' + sid + '">' + (s.jours||0) + ' j. ouvres (Lu-Ve)</div></div>';
+  html += '<div class="fc calc"><label>Brut estime</label><div class="fval gold" id="sb-' + sid + '">' + brutDisplay + '</div></div>';
+  html += '<div class="fc calc"><label>Net estime (~77%)</label><div class="fval green" id="sn-' + sid + '">' + netDisplay + '</div></div>';
+  html += '</div>';
+  html += '<div class="card-foot">'
+    + '<button class="btn btn-ghost btn-sm" onclick="purgerViderSalaries()">&#8635; Reinitialiser</button>'
+    + '<button class="btn btn-danger btn-xs" data-id="' + sid + '" onclick="viderSalarie(this.dataset.id)">&#10005; Vider la fiche</button>'
+    + '<span style="font-size:10px;color:var(--t4);margin-left:auto">Sauvegarde automatique</span>'
+    + '</div>';
+  html += '</form>';
+  html += '</div>';
+  return html;
+}
+
+function uSal(id, key, val) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===id; }); if (!s) return;
+  s[key] = val;
+  // Update header
+  var card = document.getElementById('sal-' + id);
+  if (card) {
+    var title = card.querySelector('.card-title');
+    if (title) {
+      var firstText = title.childNodes[1];
+      if (firstText && firstText.nodeType === 3) firstText.textContent = ' ' + (s.prenom||'Nouveau') + ' ' + (s.nom||'salarie') + ' ';
+    }
+  }
+  save();
+}
+
+function uSalCalc(id, key, val) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===id; }); if (!s) return;
+  s[key] = (key==='taux'||key==='hj') ? (parseFloat(val)||0) : val;
+  if (s.debut && s.fin) {
+    s.jours = joursOuvres(s.debut, s.fin);
+    s.brut = (s.taux||0)*(s.hj||7)*s.jours;
+  }
+  var jEl=document.getElementById('sj-'+id), bEl=document.getElementById('sb-'+id), nEl=document.getElementById('sn-'+id);
+  if(jEl) jEl.textContent = (s.jours||0)+' jours';
+  if(bEl) bEl.textContent = (s.brut||0).toFixed(2)+' \u20ac';
+  if(nEl) nEl.textContent = ((s.brut||0)*0.7718).toFixed(2)+' \u20ac';
+  save();
+}
+
+function uSalDDN(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  var j = document.getElementById('ddn-j-'+sid);
+  var m = document.getElementById('ddn-m-'+sid);
+  var a = document.getElementById('ddn-a-'+sid);
+  if (!j||!m||!a) return;
+  var jv = j.value.padStart(2,'0'), mv = m.value.padStart(2,'0'), av = a.value;
+  if (av && mv && jv) s.ddn = av+'-'+mv+'-'+jv;
+  save();
+}
+
+function ajouterSalarie() {
+  var soc = getSoc(); if (!soc) { toast('Selectionnez une societe'); return; }
+  // Supprimer automatiquement les fiches vides existantes
+  soc.salaries = soc.salaries.filter(function(s){
+    return s.nom || s.prenom || s.nir || s.poste;
+  });
+  var id = 'SAL' + Date.now().toString().slice(-6);
+  soc.salaries.push({
+    id:id, nom:'', prenom:'', nir:'', poste:'',
+    ddn:'', lieu:'', nat:'', email:'', adresse:'', iban:'',
+    motif:'accroissement_temp',
+    debut:'', fin:'', taux:'', hj:'', jours:0, brut:0,
+    voletValide:false
+  });
+  save(); renderSalaries(); updateBadge();
+  setTimeout(function(){
+    var el = document.getElementById('sal-'+id);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+  }, 60);
+  toast('Nouvelle fiche vide — remplissez les champs');
+}
+
+function purgerViderSalaries() {
+  var soc = getSoc(); if (!soc) return;
+  var vides = soc.salaries.filter(function(s){ return !s.nom && !s.prenom && !s.nir; });
+  if (vides.length) {
+    if (!confirm(vides.length + ' fiche(s) vide(s) trouvee(s). Supprimer et reinitialiser ?')) return;
+    vides.forEach(function(s){
+      soc.salaries = soc.salaries.filter(function(x){ return x.id !== s.id; });
+      soc.bulletins = soc.bulletins.filter(function(b){ return b.salId !== s.id; });
+    });
+    save();
+    toast(vides.length + ' fiche(s) vide(s) supprimee(s)');
+  } else {
+    toast('Aucune fiche vide — affichage actualise');
+  }
+  renderSalaries();
+}
+
+function viderSalarie(id) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===id; }); if (!s) return;
+  if (!confirm('Vider tous les champs de ce salarie ?')) return;
+  s.nom=''; s.prenom=''; s.nir=''; s.poste=''; s.ddn=''; s.lieu=''; s.nat='';
+  s.email=''; s.adresse=''; s.iban=''; s.motif=''; s.debut=''; s.fin='';
+  s.taux=''; s.hj=''; s.jours=0; s.brut=0;
+  s.voletValide=false; s.paieData=null;
+  soc.bulletins = soc.bulletins.filter(function(b){ return b.salId!==id; });
+  soc.volets = (soc.volets||[]).filter(function(v){ return v.sid!==id; });
+  save(); updateBadge(); renderSalaries();
+  toast('Fiche entierement videe');
+}
+
+function supprimerSalarie(id) {
+  var soc = getSoc(); if (!soc) return;
+  var sal = soc.salaries.find(function(s){ return s.id===id; });
+  var nom = sal ? sal.prenom + ' ' + sal.nom : 'ce salarie';
+  if (!confirm('Supprimer ' + nom + ' ?\nSes bulletins et volets seront egalement supprimes.')) return;
+  soc.salaries = soc.salaries.filter(function(s){ return s.id!==id; });
+  soc.bulletins = soc.bulletins.filter(function(b){ return b.salId!==id; });
+  soc.volets = (soc.volets||[]).filter(function(v){ return v.sid!==id; });
+  save(); renderSalaries(); renderDashboard(); updateBadge();
+  toast(nom + ' supprime');
+}
+
+// ═══ CONTRATS ═══
+function renderContrats() {
+  var soc = getSoc();
+  var body = document.getElementById('page-contrats');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9314; Contrats CDD</div>'
+    + '<div class="page-sub">Recapitulatif contractuel et echeances legales</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfContrats()">&#9156; Tous PDF</button></div></div>';
+
+  if (!soc || !soc.salaries.length) {
+    body.innerHTML = hdr + '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Ajoutez des salaries a l&#39;etape &#9313;</div></div>';
+    return;
+  }
+  var fmt = function(d){ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+  var html = hdr;
+  soc.salaries.forEach(function(s, i) {
+    var d1 = new Date(s.debut);
+    var dpae = new Date(d1); dpae.setDate(dpae.getDate()-1);
+    var ctr  = new Date(d1); ctr.setDate(ctr.getDate()+2);
+    var le5  = new Date(new Date(s.fin).getFullYear(), new Date(s.fin).getMonth()+1, 5);
+    var cid = 'ctr-' + s.id;
+    html += '<div class="card" id="ccard-' + s.id + '">';
+    html += '<div class="card-head">';
+    html += '<div class="card-title"><span class="card-num">' + (i+1) + '</span> ' + (s.prenom||'—') + ' ' + (s.nom||'—') + (s.poste ? chip(s.poste) : '') + '</div>';
+    html += '<div style="display:flex;gap:7px">' + pill('CDD','pill-ok');
+    html += '<button class="btn btn-sec btn-xs" data-sid="' + s.id + '" onclick="resetContrat(this.dataset.sid)">&#8635; Reinit.</button>';
+    html += '<button class="btn btn-gold btn-xs" data-sid="' + s.id + '" onclick="pdfContratSingle(this.dataset.sid)">&#9156; PDF</button>';
+    html += '</div></div>';
+
+    html += '<div class="card-sect">A — Parties au contrat</div>';
+    html += '<div class="fgrid c2">';
+    html += '<div class="fc"><label>Employeur</label><input data-sid="' + s.id + '" data-key="ctr_emp" value="' + (s.ctr_emp||soc.raison||'') + '" onchange="uCtrInp(this)" placeholder="Raison sociale"></div>';
+    html += '<div class="fc"><label>SIRET employeur</label><input data-sid="' + s.id + '" data-key="ctr_siret" value="' + (s.ctr_siret||soc.siret||'') + '" onchange="uCtrInp(this)" style="font-family:monospace;font-size:11px"></div>';
+    html += '<div class="fc"><label>Salarie</label><input data-sid="' + s.id + '" data-key="ctr_sal" value="' + (s.ctr_sal||(s.prenom+' '+s.nom)||'') + '" onchange="uCtrInp(this)"></div>';
+    html += '<div class="fc"><label>NIR</label><input data-sid="' + s.id + '" data-key="nir" value="' + (s.nir||'') + '" onchange="uSalInp(this)" placeholder="1 XX XX XX XXX" style="font-family:monospace;font-size:11px"></div>';
+    html += '</div>';
+
+    html += '<div class="card-sect">B — Conditions du contrat</div>';
+    html += '<div class="fgrid c2">';
+    html += '<div class="fc span2"><label>Motif du recours CDD</label><div class="fval">' + motifLabel(s.motif) + '</div></div>';
+    html += '<div class="fc"><label>Date de debut</label><input type="date" data-sid="' + s.id + '" data-key="debut" value="' + (s.debut||'') + '" onchange="uSalCalcInp(this)"></div>';
+    html += '<div class="fc"><label>Date de fin</label><input type="date" data-sid="' + s.id + '" data-key="fin" value="' + (s.fin||'') + '" onchange="uSalCalcInp(this)"></div>';
+    html += '<div class="fc"><label>Poste</label><input data-sid="' + s.id + '" data-key="poste" value="' + (s.poste||'') + '" onchange="uSalInp(this)" placeholder="ex. Agent accueil"></div>';
+    html += '<div class="fc"><label>Taux horaire brut — de la fiche salarie</label><div class="fval gold">' + (s.taux||'—') + ' &euro;/h</div></div>';
+    html += '<div class="fc"><label>Convention collective</label><div class="fval">' + (soc.ccn||'—') + '</div></div>';
+    html += '<div class="fc"><label>Remuneration brute estimee</label><div class="fval green">' + (s.brut||0).toFixed(2) + ' &euro;</div></div>';
+    html += '<div class="fc"><label>Sante au travail</label><div class="fval">' + sstLabel(soc.sst) + '</div></div>';
+    html += '</div>';
+
+    html += '<div class="card-sect">C — Echeances legales</div>';
+    html += '<div class="fgrid c3">';
+    html += '<div class="fc calc"><label>DPAE — avant le</label><div class="fval red">' + fmt(dpae) + '</div></div>';
+    html += '<div class="fc calc"><label>Contrat signe avant le</label><div class="fval">' + fmt(ctr) + '</div></div>';
+    html += '<div class="fc calc"><label>Volet TESE avant le</label><div class="fval" style="color:var(--or)">' + fmt(le5) + '</div></div>';
+    html += '</div></div>';
+  });
+  body.innerHTML = html;
+}
+
+function uCtrInp(inp) {
+  var sid = inp.dataset.sid, key = inp.dataset.key;
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  s[key] = inp.value; save();
+}
+function uSalInp(inp) {
+  var sid = inp.dataset.sid, key = inp.dataset.key;
+  uSal(sid, key, inp.value);
+}
+function uSalCalcInp(inp) {
+  var sid = inp.dataset.sid, key = inp.dataset.key;
+  uSalCalc(sid, key, inp.value);
+}
+
+function resetContrat(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  if (!confirm('Reinitialiser les champs modifies de ce contrat ?')) return;
+  delete s.ctr_emp; delete s.ctr_siret; delete s.ctr_sal;
+  save(); renderContrats(); toast('Contrat reinitialise');
+}
+
+function pdfContratSingle(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  var p = mkPDF(), doc = p.doc;
+  var fmt = function(d){ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+  var d1 = new Date(s.debut), dpae = new Date(d1); dpae.setDate(dpae.getDate()-1);
+  var y = p.hdr('CONTRAT A DUREE DETERMINEE', (s.prenom||'')+' '+(s.nom||''));
+  y = p.ebox(y);
+  y = p.sec('Parties', y);
+  y = p.row('Employeur', soc.raison||'—', y);
+  y = p.row('SIRET', soc.siret||'—', y);
+  y = p.row('Salarie', (s.prenom||'')+' '+(s.nom||''), y);
+  y = p.row('NIR', s.nir||'—', y);
+  y += 2; y = p.sec('Conditions', y);
+  y = p.row('Motif', motifLabel(s.motif), y);
+  y = p.row('Poste', s.poste||'—', y);
+  y = p.row('Debut', fmt(s.debut), y);
+  y = p.row('Fin', fmt(s.fin), y);
+  y = p.row('Taux horaire', (s.taux||'—')+' EUR/h', y, true);
+  y = p.row('Brut estime', (s.brut||0).toFixed(2)+' EUR', y, true);
+  y = p.row('CCN', soc.ccn||'—', y);
+  y += 2; y = p.sec('Echeances', y);
+  y = p.row('DPAE avant le', fmt(dpae), y);
+  p.ftr(); doc.save('contrat_'+(s.nom||'salarie')+'_'+(s.debut||'').replace(/-/g,'')+'.pdf');
+  toast('PDF contrat genere');
+}
+
+function uCtr(sid, key, val) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  s[key] = val; save();
+}
+
+function resetContrat(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  if (!confirm('Reinitialiser les champs modifies de ce contrat ?')) return;
+  delete s.ctr_emp; delete s.ctr_siret; delete s.ctr_sal;
+  save(); renderContrats(); toast('Contrat reinitialise');
+}
+
+function pdfContratSingle(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  var p = mkPDF(), doc = p.doc, M = p.M, W = p.W;
+  var fmt = function(d){ return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+  var d1 = new Date(s.debut), dpae = new Date(d1); dpae.setDate(dpae.getDate()-1);
+  var y = p.hdr('CONTRAT A DUREE DETERMINEE', (s.prenom||'')+' '+(s.nom||''));
+  y = p.ebox(y);
+  y = p.sec('Parties', y);
+  y = p.row('Employeur', soc.raison||'—', y);
+  y = p.row('SIRET', soc.siret||'—', y);
+  y = p.row('Salarie', (s.prenom||'')+' '+(s.nom||''), y);
+  y = p.row('NIR', s.nir||'—', y);
+  y += 2; y = p.sec('Conditions', y);
+  y = p.row('Motif', motifLabel(s.motif), y);
+  y = p.row('Poste', s.poste||'—', y);
+  y = p.row('Debut', fmt(s.debut), y);
+  y = p.row('Fin', fmt(s.fin), y);
+  y = p.row('Taux horaire', s.taux+' EUR/h', y, true);
+  y = p.row('Brut estime', (s.brut||0).toFixed(2)+' EUR', y, true);
+  y = p.row('CCN', soc.ccn||'—', y);
+  y += 2; y = p.sec('Echeances', y);
+  y = p.row('DPAE avant le', fmt(dpae), y);
+  y = p.row('Convention', soc.ccn||'—', y);
+  p.ftr(); doc.save('contrat_'+(s.nom||'salarie')+'_'+s.debut+'.pdf');
+  toast('PDF contrat genere');
+}
+
+function updateContrat(sid, key, val) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  s[key] = (key==='hj') ? (parseInt(val)||7) : val;
+  if (s.debut && s.fin) {
+    s.jours = joursOuvres(s.debut, s.fin);
+    s.brut = (s.taux||0)*(s.hj||7)*s.jours;
+  }
+  save();
+}
+
+// ═══ VOLETS SOCIAUX ═══
+function renderPaie() {
+  var soc = getSoc();
+  var body = document.getElementById('page-paie');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9315; Volets sociaux</div><div class="page-sub">Saisir les elements de remuneration — avant le 5 du mois suivant</div></div></div>'
+    + '<div class="alert alert-warn"><span>&#9203;</span><span>Deadline : <strong>avant le 5 du mois suivant</strong> la periode d\'emploi.</span></div>';
+
+  if (!soc || !soc.salaries.length) {
+    body.innerHTML = hdr + '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Ajoutez des salaries a l&#39;etape &#9313;</div></div>';
+    return;
+  }
+
+  var content = soc.salaries.map(function(s, i) {
+    if (s.voletValide) {
+      return '<div class="card" style="border-color:var(--grbr)">'
+        + '<div class="card-head"><div class="card-title"><span class="card-num">' + (i+1) + '</span>' + s.prenom + ' ' + s.nom + chip(s.debut+'->'+s.fin) + '</div>' + pill('Volet valide &#10003;','pill-ok') + '</div>'
+        + '<div class="card-body"><div class="alert alert-ok" style="margin:0"><span>&#10003;</span><span>Volet social valide. Bulletin disponible a l\'etape &#9316;.</span></div></div></div>';
+    }
+    var vid = 'v_' + s.id;
+    var html = '<div class="card" id="vol-' + s.id + '">';
+    html += '<div class="card-head"><div class="card-title"><span class="card-num">' + (i+1) + '</span>' + s.prenom + ' ' + s.nom + ' ' + chip(s.debut + ' -> ' + s.fin) + '</div>' + pill('A valider','pill-pend') + '</div>';
+    html += '<div class="card-sect">A — Temps de travail</div>';
+    html += '<div class="fgrid c3">';
+    html += '<div class="fc"><label>Heures travaillees <span class="req">*</span></label><input type="number" id="' + vid + '_h" value="" placeholder="' + ((s.hj||7)*(s.jours||0)) + '" min="0" step="0.5" oninput="calcVol(\'' + s.id + '\')"></div>';
+    html += '<div class="fc"><label>Absences (heures)</label><input type="number" id="' + vid + '_a" value="" placeholder="0" min="0" oninput="calcVol(\'' + s.id + '\')"></div>';
+    html += '<div class="fc"><label>Conges pris (TESE)</label><input type="number" id="' + vid + '_cp" value="" placeholder="0" min="0"></div>';
+    html += '</div>';
+    html += '<div class="card-sect">B — Elements de remuneration</div>';
+    html += '<div class="fgrid c3">';
+    html += '<div class="fc"><label>Taux horaire brut (&euro;) — repris fiche salarie</label><div class="fval gold" id="' + vid + '_t_disp">' + (s.taux||'—') + ' &euro;/h</div><input type="hidden" id="' + vid + '_t" value="' + (s.taux||0) + '"></div>';
+    html += '<div class="fc"><label>Primes (&euro;)</label><input type="number" id="' + vid + '_p" value="" placeholder="0" min="0" oninput="calcVol(\'' + s.id + '\')"></div>';
+    html += '<div class="fc"><label>Avantages en nature (&euro;)</label><input type="number" id="' + vid + '_av" value="" placeholder="0" min="0" oninput="calcVol(\'' + s.id + '\')"></div>';
+    html += '</div>';
+    html += '<div class="card-sect">C — Recapitulatif calcule automatiquement</div>';
+    html += '<div class="fgrid c4">';
+    html += '<div class="fc calc"><label>Salaire brut</label><div class="fval gold" id="' + vid + '_rb">—</div></div>';
+    html += '<div class="fc calc"><label>Cotisations sal. (~22.8%)</label><div class="fval red" id="' + vid + '_rc">—</div></div>';
+    html += '<div class="fc calc"><label>Net avant impot</label><div class="fval green" id="' + vid + '_rn">—</div></div>';
+    html += '<div class="fc calc"><label>ICP 10% (fin CDD)</label><div class="fval gold" id="' + vid + '_ri">—</div></div>';
+    html += '</div>';
+    html += '<div class="card-foot">'
+      + '<button class="btn btn-gold btn-sm" data-id="' + s.id + '" onclick="validerVol(this.dataset.id)">&#10003; Valider et generer le bulletin</button>'
+      + '<button class="btn btn-ghost btn-sm" data-id="' + s.id + '" onclick="reinitVolet(this.dataset.id)">&#8635; Reinitialiser</button>'
+      + '<span style="font-size:10px;color:var(--t4);margin-left:auto">Deadline : avant le 5 du mois suivant</span></div>';
+    html += '</div>';
+    return html;
+  }).join('');
+
+  body.innerHTML = hdr + content;
+  // Calculer apres rendu DOM
+  setTimeout(function(){
+    if (!soc) return;
+    soc.salaries.forEach(function(s){ if (!s.voletValide) calcVol(s.id); });
+  }, 0);
+}
+
+function calcVol(sid) {
+  var vid = 'v_' + sid;
+  var hEl  = document.getElementById(vid+'_h');
+  var aEl  = document.getElementById(vid+'_a');
+  var tEl  = document.getElementById(vid+'_t');
+  var pEl  = document.getElementById(vid+'_p');
+  var avEl = document.getElementById(vid+'_av');
+  if (!hEl) return null;
+  var soc = getSoc(); if (!soc) return null;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return null;
+  var h  = parseFloat(hEl.value) || 0;
+  var a  = parseFloat(aEl ? aEl.value : 0) || 0;
+  var t  = parseFloat(tEl ? tEl.value : 0) || parseFloat(s.taux) || 0;
+  var p  = parseFloat(pEl ? pEl.value : 0) || 0;
+  var av = parseFloat(avEl ? avEl.value : 0) || 0;
+  var p  = parseFloat(pEl?pEl.value:0)||0;
+  var av = parseFloat(avEl?avEl.value:0)||0;
+  var heff = Math.max(0,h-a);
+  var brut = heff*t+p+av, cs=brut*0.2282, net=brut-cs, icp=brut*0.10;
+  var f = function(v){ return v.toFixed(2)+' \u20ac'; };
+  var set = function(id,val){ var el=document.getElementById(id); if(el)el.textContent=val; };
+  set(vid+'_rb', f(brut));
+  set(vid+'_rc', '- '+f(cs));
+  set(vid+'_rn', f(net));
+  set(vid+'_ri', f(icp));
+  return {brut:brut,cs:cs,net:net,icp:icp,heures:heff,taux:t,prime:p};
+}
+
+function validerVol(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  var data = calcVol(sid); if (!data) { toast('Saisie incomplete'); return; }
+  s.voletValide = true; s.paieData = data;
+  soc.bulletins.push({id:'BUL'+Date.now().toString().slice(-6), salId:sid, salarie:JSON.parse(JSON.stringify(s)), data:data, date:new Date().toISOString().split('T')[0]});
+  if (!soc.volets) soc.volets = [];
+  soc.volets.push({sid:sid,data:data});
+  save(); updateBadge(); renderPaie(); renderDashboard();
+  toast('Volet valide — bulletin de ' + s.prenom + ' ' + s.nom + ' disponible a l\'etape 5');
+}
+
+function annulerVolet(sid) {
+  var soc = getSoc(); if (!soc) return;
+  if (!confirm('Annuler ce volet et supprimer le bulletin associe ?')) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  s.voletValide = false; s.paieData = null;
+  soc.bulletins = soc.bulletins.filter(function(b){ return b.salId!==sid; });
+  soc.volets = (soc.volets||[]).filter(function(v){ return v.sid!==sid; });
+  save(); updateBadge(); renderPaie(); renderDashboard();
+  toast('Volet annule — vous pouvez ressaisir');
+}
+
+// ═══ BULLETINS ═══
+function reinitVolet(sid) {
+  var soc = getSoc(); if (!soc) return;
+  var s = soc.salaries.find(function(x){ return x.id===sid; }); if (!s) return;
+  if (!confirm('Reinitialiser les saisies du volet social de ' + s.prenom + ' ' + s.nom + ' ?')) return;
+  s.voletValide = false; s.paieData = null;
+  soc.bulletins = soc.bulletins.filter(function(b){ return b.salId !== sid; });
+  soc.volets = (soc.volets||[]).filter(function(v){ return v.sid !== sid; });
+  save(); updateBadge(); renderPaie(); renderDashboard();
+  toast('Volet reinitialise');
+}
+
+function renderBulletins() {
+  var soc = getSoc();
+  var body = document.getElementById('page-bulletins');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9316; Bulletins de paie</div><div class="page-sub">Generes automatiquement apres validation des volets sociaux</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfBulletins()">&#9156; Tous PDF</button></div></div>';
+
+  // Nettoyer les bulletins orphelins (salarié supprimé) automatiquement
+  var avant = soc.bulletins.length;
+  var salIds = soc.salaries.map(function(s){ return s.id; });
+  soc.bulletins = soc.bulletins.filter(function(b){ return salIds.indexOf(b.salId) >= 0; });
+  if (soc.bulletins.length < avant) { save(); toast('Bulletins orphelins supprimes automatiquement'); }
+
+  if (!soc.bulletins.length) {
+    body.innerHTML = hdr + '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Les bulletins apparaitront apres validation des volets sociaux (etape &#9315;)</div></div>';
+    return;
+  }
+  var content = soc.bulletins.map(function(b) {
+    // Récupérer les données fraîches du salarié
+    var salFrais = soc.salaries.find(function(x){ return x.id === b.salId; });
+    var s = salFrais || b.salarie;
+    var d = b.data;
+    var html = '<div class="card" style="margin-bottom:14px">';
+    html += '<div class="card-head"><div class="card-title">' + s.prenom + ' ' + s.nom + chip(b.date) + (s.poste ? chip(s.poste) : '') + '</div>'
+      + '<div style="display:flex;gap:7px;align-items:center">' + pill('Emis','pill-done')
+      + '<button class="btn btn-sec btn-xs" data-id="' + b.id + '" onclick="pdfBulletinSingle(this.dataset.id)">&#9156; PDF</button>'
+      + '<button class="btn btn-danger btn-xs" data-id="' + b.id + '" onclick="supprimerBulletin(this.dataset.id)">&#10005; Annuler</button>'
+      + '</div></div>';
+    html += '<div class="card-body">';
+    html += '<div class="bulletin">';
+    html += '<h3>Bulletin de Paie</h3>';
+    html += '<div class="bul-head"><div><strong>' + (soc.raison||'Employeur') + '</strong><br>' + (soc.adresse||'') + '<br>SIRET : ' + (soc.siret||'—') + ' &bull; NAF : ' + (soc.naf||'—') + '</div>'
+      + '<div><strong>' + s.prenom + ' ' + s.nom + '</strong><br>' + (s.adresse||'—') + '<br>NIR : ' + (s.nir||'—') + '<br>' + (s.poste||'—') + '</div></div>';
+    html += '<table class="bul-table"><thead><tr><th>Designation</th><th style="text-align:right">Montant</th></tr></thead><tbody>';
+    html += '<tr><td>Periode : ' + s.debut + ' -> ' + s.fin + ' — ' + d.heures + 'h x ' + d.taux.toFixed(2) + ' &euro;/h</td><td style="text-align:right">' + (d.heures*d.taux).toFixed(2) + ' &euro;</td></tr>';
+    if (d.prime) html += '<tr><td>Prime</td><td style="text-align:right">' + d.prime.toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr class="total"><td>SALAIRE BRUT</td><td style="text-align:right">' + d.brut.toFixed(2) + ' &euro;</td></tr>';
+    html += '</tbody></table>';
+    html += '<table class="bul-table"><thead><tr><th>Cotisations salariales</th><th style="text-align:right">Montant</th></tr></thead><tbody>';
+    html += '<tr><td>Securite sociale</td><td style="text-align:right">- ' + (d.brut*0.0785).toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr><td>Retraite complementaire AGIRC-ARRCO</td><td style="text-align:right">- ' + (d.brut*0.033).toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr><td>Assurance chomage</td><td style="text-align:right">- ' + (d.brut*0.024).toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr><td>CSG / CRDS</td><td style="text-align:right">- ' + (d.brut*0.0927).toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr class="total"><td>TOTAL COTISATIONS SALARIALES</td><td style="text-align:right">- ' + d.cs.toFixed(2) + ' &euro;</td></tr>';
+    html += '</tbody></table>';
+    html += '<div class="bul-net"><span>NET A PAYER AVANT IMPOT</span><span>' + d.net.toFixed(2) + ' &euro;</span></div>';
+    html += '<table class="bul-table" style="margin-top:8px"><tbody>';
+    html += '<tr><td>Indemnite compensatrice de conges payes (ICP 10%)</td><td style="text-align:right">' + d.icp.toFixed(2) + ' &euro;</td></tr>';
+    html += '<tr class="total"><td>NET TOTAL VERSE (y.c. ICP)</td><td style="text-align:right">' + (d.net+d.icp).toFixed(2) + ' &euro;</td></tr>';
+    html += '</tbody></table>';
+    html += '<div style="margin-top:10px;font-size:9px;color:#bbb;text-align:center">Bulletin etabli via TESE — Urssaf &bull; ' + b.date + '</div>';
+    html += '</div></div></div>';
+    return html;
+  }).join('');
+  body.innerHTML = hdr + content;
+}
+
+function supprimerBulletin(bulId) {
+  var soc = getSoc(); if (!soc) return;
+  var b = soc.bulletins.find(function(x){ return x.id===bulId; });
+  if (!b) return;
+  if (!confirm('Annuler le bulletin de ' + b.salarie.prenom + ' ' + b.salarie.nom + ' du ' + b.date + ' ?\nLe volet social sera reinitialise.')) return;
+  // Remettre le volet à non validé
+  var sal = soc.salaries.find(function(x){ return x.id===b.salId; });
+  if (sal) { sal.voletValide = false; sal.paieData = null; }
+  soc.bulletins = soc.bulletins.filter(function(x){ return x.id!==bulId; });
+  soc.volets = (soc.volets||[]).filter(function(x){ return x.sid!==b.salId; });
+  save(); updateBadge(); renderBulletins(); renderDashboard();
+  toast('Bulletin annule — volet reinitialise');
+}
+
+function renderDSN() {
+  var soc = getSoc();
+  var body = document.getElementById('page-dsn');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9317; Declaration Sociale Nominative</div><div class="page-sub">A transmettre via letese.urssaf.fr apres validation des bulletins</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfDSN()">&#9156; PDF</button></div></div>';
+
+  if (!soc) { body.innerHTML = hdr + '<div class="alert alert-warn"><span>&#9888;</span><span>Selectionnez une societe.</span></div>'; return; }
+
+  var dsnTransmise = soc.dsnTransmise || false;
+
+  // Bloc transmission — toujours visible
+  var transmissionBloc = '';
+  if (dsnTransmise) {
+    transmissionBloc = '<div class="alert alert-ok" style="margin-bottom:14px"><span>&#10003;</span><span>DSN transmise le ' + (soc.dsnDate||'—') + ' — URSSAF, France Travail, AGIRC-ARRCO confirmes.'
+      + ' <button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="resetDSN()">&#8635; Reinitialiser</button></span></div>';
+  } else {
+    transmissionBloc = '<div class="card" style="margin-bottom:14px">'
+      + '<div class="card-head"><div class="card-title">&#9315; Transmission DSN</div></div>'
+      + '<div class="card-body">'
+      + '<div class="alert alert-warn" style="margin-bottom:14px"><span>&#9888;</span><span>Connectez-vous sur <strong>letese.urssaf.fr</strong> pour transmettre la DSN, puis marquez-la comme transmise.</span></div>'
+      + '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">'
+      + '<button class="btn btn-sec btn-sm" onclick="window.open(\'https://letese.urssaf.fr\',\'_blank\')">&#8599; Ouvrir letese.urssaf.fr</button>'
+      + '<button class="btn btn-gold" onclick="transmettresDSN()">&#10003; Marquer DSN comme transmise</button>'
+      + '</div></div></div>';
+  }
+
+  if (!soc.bulletins || !soc.bulletins.length) {
+    body.innerHTML = hdr + transmissionBloc
+      + '<div class="card"><div class="card-body" style="text-align:center;padding:30px;color:var(--t4)">Les blocs individuels apparaitront apres validation des volets sociaux (etape &#9315;)</div></div>';
+    return;
+  }
+
+  var tb = soc.bulletins.reduce(function(a,b){ return a+b.data.brut; }, 0);
+  var blocs = soc.bulletins.map(function(b) {
+    return '<div class="dsn-blk"><div class="dsn-tt">' + b.salarie.prenom + ' ' + b.salarie.nom + '</div>'
+      + '<div class="dsn-r"><span class="dsn-k">NIR</span><span class="dsn-v">' + (b.salarie.nir||'—') + '</span></div>'
+      + '<div class="dsn-r"><span class="dsn-k">Contrat</span><span class="dsn-v">CDD ' + b.salarie.debut + '->' + b.salarie.fin + '</span></div>'
+      + '<div class="dsn-r"><span class="dsn-k">Brut</span><span class="dsn-v">' + b.data.brut.toFixed(2) + ' &euro;</span></div>'
+      + '<div class="dsn-r"><span class="dsn-k">Cot. sal.</span><span class="dsn-v">' + b.data.cs.toFixed(2) + ' &euro;</span></div>'
+      + '<div class="dsn-r"><span class="dsn-k">Net verse</span><span class="dsn-v">' + b.data.net.toFixed(2) + ' &euro;</span></div></div>';
+  }).join('');
+
+  var html = hdr + transmissionBloc;
+  html += '<div class="g2">';
+  html += '<div class="card"><div class="card-head"><div class="card-title">En-tete declaration</div></div>';
+  html += '<div class="fgrid c1">';
+  html += fc('Declarant', fval(soc.raison,'gold'));
+  html += fc('SIRET', fval(soc.siret,'mono'));
+  html += fc('Type', fval('DSN mensuelle — TESE'));
+  html += fc('Nb salaries', fval(String(soc.bulletins.length),'gold'));
+  html += fc('Masse salariale brute', fval(tb.toFixed(2)+' &euro;','gold'));
+  html += fc('Charges patronales (~45%)', fval((tb*0.45).toFixed(2)+' &euro;','gold'));
+  html += fc('Statut transmission', fval(dsnTransmise ? '&#10003; Transmise le ' + (soc.dsnDate||'—') : 'En attente', dsnTransmise ? 'green' : ''));
+  html += '</div></div>';
+  html += '<div class="card"><div class="card-head"><div class="card-title">Blocs individuels</div></div><div class="card-body">' + blocs + '</div></div>';
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function transmettresDSN() {
+  var soc = getSoc(); if (!soc) return;
+  if (!confirm('Confirmer la transmission de la DSN a URSSAF, France Travail et AGIRC-ARRCO ?')) return;
+  soc.dsnTransmise = true;
+  soc.dsnDate = new Date().toLocaleDateString('fr-FR');
+  save(); renderDSN(); renderDashboard();
+  toast('DSN marquee comme transmise le ' + soc.dsnDate);
+}
+
+function resetDSN() {
+  var soc = getSoc(); if (!soc) return;
+  if (!confirm('Reinitialiser le statut de transmission DSN ?')) return;
+  soc.dsnTransmise = false; soc.dsnDate = '';
+  save(); renderDSN();
+  toast('Statut DSN reinitialise');
+}
+
+// ═══ CHARGES ═══
+function renderCharges() {
+  var soc = getSoc();
+  var body = document.getElementById('page-charges');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9318; Charges &amp; Paiements</div><div class="page-sub">Cotisations sociales — prelevement automatique le 15</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfCharges()">&#9156; PDF</button></div></div>';
+
+  if (!soc || !soc.bulletins.length) {
+    body.innerHTML = hdr + '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Les charges apparaitront apres validation des volets sociaux</div></div>';
+    return;
+  }
+  var tb = soc.bulletins.reduce(function(a,b){ return a+b.data.brut; }, 0);
+  var tn = soc.bulletins.reduce(function(a,b){ return a+b.data.net+b.data.icp; }, 0);
+  var now = new Date(), le15 = new Date(now.getFullYear(),now.getMonth()+1,15);
+  var fmt = function(d){ return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); };
+
+  var html = hdr;
+  html += '<div class="metrics">'
+    + '<div class="metric"><div class="metric-lbl">Masse brute</div><div class="metric-val">' + tb.toFixed(2) + ' &euro;</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Charges pat.</div><div class="metric-val g">' + (tb*0.45).toFixed(2) + ' &euro;</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Net verse sal.</div><div class="metric-val gr">' + tn.toFixed(2) + ' &euro;</div></div>'
+    + '<div class="metric"><div class="metric-lbl">Cout total</div><div class="metric-val" style="font-size:16px">' + (tb+tb*0.45+tb*0.10).toFixed(2) + ' &euro;</div></div>'
+    + '</div>';
+
+  html += '<div class="g2">';
+  html += '<div class="card"><div class="card-head"><div class="card-title">Prelevement TESE automatique le 15</div></div>';
+  html += '<div class="fgrid c2">';
+  html += fc('URSSAF — cotisations sociales', fval((tb*0.4382).toFixed(2)+' &euro;','gold'));
+  html += fc('Date de prelevement', fval(fmt(le15)));
+  html += fc('AGIRC-ARRCO — retraite complementaire', fval((tb*0.086).toFixed(2)+' &euro;','gold'));
+  html += fc('France Travail — assurance chomage', fval((tb*0.0405).toFixed(2)+' &euro;','gold'));
+  html += '</div>';
+  html += '<div style="background:var(--gbg);padding:12px 18px;border-top:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center">'
+    + '<div><div style="font-size:13px;font-weight:600">Total prelevement TESE</div><div style="font-size:10px;color:var(--t3)">1 seul prelevement automatique</div></div>'
+    + '<div style="text-align:right"><div style="font-family:\'Syne\',sans-serif;font-size:22px;font-weight:700;color:var(--gold)">' + (tb*0.45+tb*0.2282).toFixed(2) + ' &euro;</div>'
+    + '<div style="font-family:\'DM Mono\',monospace;font-size:9px;color:var(--gold)">' + fmt(le15) + '</div></div></div>';
+  html += '</div>';
+
+  html += '<div>';
+  html += '<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title">Hors TESE — a regler separement</div></div>';
+  html += '<div class="fgrid c2">';
+  html += fc('Formation professionnelle (OPCO) 0,55%', fval((tb*0.0055).toFixed(2)+' &euro;'));
+  html += fc('Frequence', fval('Annuel'));
+  html += fc('Sante au travail — ' + sstLabel(soc.sst), fval('~50 &euro;'));
+  html += fc('Prevoyance / Mutuelle (selon CCN)', fval((tb*0.015).toFixed(2)+' &euro;'));
+  html += '</div></div>';
+  html += '<div class="card"><div class="card-head"><div class="card-title">Versements aux salaries</div></div>';
+  html += '<div class="fgrid c2">';
+  soc.bulletins.forEach(function(b){
+    html += fc(b.salarie.prenom+' '+b.salarie.nom+' — fin '+b.salarie.fin, fval((b.data.net+b.data.icp).toFixed(2)+' &euro;','green'));
+    html += fc('Net + ICP detail', fval('Net '+b.data.net.toFixed(2)+' &euro; + ICP '+b.data.icp.toFixed(2)+' &euro;'));
+  });
+  html += '</div></div>';
+  html += '</div></div>';
+  body.innerHTML = html;
+}
+
+// ═══ CALENDRIER ═══
+function renderCalendrier() {
+  var soc = getSoc();
+  var body = document.getElementById('page-calendrier');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">Calendrier RH</div><div class="page-sub">Toutes les echeances legales calculees automatiquement</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-sec btn-sm" onclick="pdfCalendrier()">&#9156; PDF</button></div></div>';
+
+  if (!soc || !soc.salaries.length) {
+    body.innerHTML = hdr + '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t4)">Ajoutez des salaries pour voir les echeances</div></div>';
+    return;
+  }
+  var now = new Date(), evts = [];
+  var tc = {warn:'var(--or)',info:'var(--bl)',accent:'var(--gold)',green:'var(--gr)'};
+  soc.salaries.forEach(function(s) {
+    var d1=new Date(s.debut), dpae=new Date(d1), ctr=new Date(d1);
+    var le5=new Date(new Date(s.fin).getFullYear(),new Date(s.fin).getMonth()+1,5);
+    var le15=new Date(new Date(s.fin).getFullYear(),new Date(s.fin).getMonth()+1,15);
+    dpae.setDate(dpae.getDate()-1); ctr.setDate(ctr.getDate()+2);
+    evts.push({d:dpae, l:'DPAE — '+s.prenom+' '+s.nom, t:'warn', dt:'Obligatoire avant debut contrat'});
+    evts.push({d:d1,   l:'Debut CDD — '+s.prenom+' '+s.nom, t:'info', dt:s.poste||''});
+    evts.push({d:ctr,  l:'Contrat signe — '+s.prenom+' '+s.nom, t:'warn', dt:'Dans les 2 jours ouvrables'});
+    evts.push({d:new Date(s.fin), l:'Fin CDD — '+s.prenom+' '+s.nom, t:'info', dt:'Solde tout compte + attestation'});
+    evts.push({d:le5,  l:'Volet social TESE — '+s.prenom+' '+s.nom, t:'warn', dt:'Avant le 5 du mois suivant'});
+    evts.push({d:le15, l:'Prelevement charges TESE', t:'accent', dt:'URSSAF — automatique'});
+  });
+  evts.sort(function(a,b){ return a.d-b.d; });
+  var rows = evts.map(function(e) {
+    return '<div style="display:flex;gap:12px;padding:8px 0;border-bottom:1px solid var(--b1);opacity:' + (e.d<now?0.4:1) + '">'
+      + '<div style="min-width:52px;text-align:right;flex-shrink:0">'
+      + '<div style="font-family:\'DM Mono\',monospace;font-size:11px;color:' + tc[e.t] + '">' + e.d.toLocaleDateString('fr-FR',{day:'2-digit',month:'short'}) + '</div>'
+      + '<div style="font-size:9px;color:var(--t4)">' + e.d.getFullYear() + '</div></div>'
+      + '<div style="width:6px;height:6px;border-radius:50%;background:' + tc[e.t] + ';margin-top:4px;flex-shrink:0"></div>'
+      + '<div><div style="font-size:12px;font-weight:500">' + e.l + '</div><div style="font-size:10px;color:var(--t4)">' + e.dt + '</div></div></div>';
+  }).join('');
+  body.innerHTML = hdr + '<div class="card"><div class="card-head"><div class="card-title">Echeances — ' + soc.raison + '</div></div><div class="card-body">' + rows + '</div></div>';
+}
+
+// ═══ SALARIES CDI ═══
+function renderCDI() {
+  var soc = getSoc();
+  var body = document.getElementById('page-cdi');
+  var hdr = '<div class="page-head"><div class="page-head-l"><div class="page-title">&#9670; Salaries CDI</div>'
+    + '<div class="page-sub">Salaries permanents — geres par le cabinet comptable</div></div>'
+    + '<div class="page-head-r"><button class="btn btn-gold btn-sm" onclick="ajouterCDI()">+ Ajouter un CDI</button></div></div>';
+
+  if (!soc) { body.innerHTML = hdr + '<div class="alert alert-warn"><span>&#9888;</span><span>Selectionnez une societe.</span></div>'; return; }
+
+  var cdiList = soc.cdi || [];
+  var masse = cdiList.reduce(function(a,s){ return a+(s.brut||0); }, 0);
+
+  var infoCab = soc.cab_nom
+    ? '<div class="alert alert-info"><span>&#9432;</span><span>Cabinet en charge : <strong>' + soc.cab_nom + '</strong>'
+      + (soc.cab_contact ? ' — ' + soc.cab_contact : '')
+      + (soc.cab_email ? ' — ' + soc.cab_email : '')
+      + (soc.cab_tel ? ' — ' + soc.cab_tel : '')
+      + '</span></div>'
+    : '<div class="alert alert-warn"><span>&#9888;</span><span>Renseignez le cabinet comptable dans la <button class="btn btn-ghost btn-sm" onclick="openSocModal(curId)">fiche societe</button></span></div>';
+
+  var content = '';
+  if (!cdiList.length) {
+    content = '<div class="card"><div class="card-body" style="text-align:center;padding:40px;color:var(--t3)">Aucun salarie CDI — cliquez sur <strong style="color:var(--gold2)">+ Ajouter un CDI</strong></div></div>';
+  } else {
+    // Recap masse salariale
+    content += '<div class="metrics" style="grid-template-columns:repeat(3,1fr);margin-bottom:14px">'
+      + '<div class="metric"><div class="metric-lbl">CDI actifs</div><div class="metric-val">' + cdiList.length + '</div></div>'
+      + '<div class="metric"><div class="metric-lbl">Masse brute mensuelle</div><div class="metric-val g">' + masse.toFixed(0) + ' &euro;</div></div>'
+      + '<div class="metric"><div class="metric-lbl">Charges pat. est. (~45%)</div><div class="metric-val">' + (masse*0.45).toFixed(0) + ' &euro;</div></div>'
+      + '</div>';
+
+    content += cdiList.map(function(s, i) {
+      var html = '<div class="card" id="cdi-' + s.id + '">';
+      html += '<div class="card-head"><div class="card-title"><span class="card-num">' + (i+1) + '</span>'
+        + (s.prenom||'Nouveau') + ' ' + (s.nom||'CDI')
+        + (s.poste ? chip(s.poste) : '')
+        + pill('CDI — hors TESE', 'pill-done')
+        + '</div>'
+        + '<button class="btn btn-danger btn-xs" data-id="' + s.id + '" onclick="supprimerCDI(this.dataset.id)">&#10005;</button>'
+        + '</div>';
+
+      html += '<div class="card-sect">Identification</div>';
+      html += '<div class="fgrid c2">';
+      html += '<div class="fc"><label>Nom *</label><input value="' + (s.nom||'') + '" data-cid="' + s.id + '" data-field="nom" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)" placeholder="NOM"></div>';
+      html += '<div class="fc"><label>Prenom *</label><input value="' + (s.prenom||'') + '" data-cid="' + s.id + '" data-field="prenom" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)" placeholder="Prenom"></div>';
+      html += '<div class="fc"><label>Poste</label><input value="' + (s.poste||'') + '" data-cid="' + s.id + '" data-field="poste" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)" placeholder="ex. Receptionniste"></div>';
+      html += '<div class="fc"><label>Date entree</label><input type="date" value="' + (s.entree||'') + '" data-cid="' + s.id + '" data-field="entree" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)"></div>';
+      html += '</div>';
+
+      html += '<div class="card-sect">Remuneration mensuelle</div>';
+      html += '<div class="fgrid c3">';
+      html += '<div class="fc"><label>Salaire brut mensuel (&euro;)</label><input type="number" value="' + (s.brut||'') + '" placeholder="ex. 2200" data-cid="' + s.id + '" data-field="brut" onchange="uCDI(this.dataset.cid,this.dataset.field,parseFloat(this.value)||0)"></div>';
+      html += '<div class="fc"><label>Temps de travail</label><input value="' + (s.temps||'') + '" placeholder="ex. 35h / semaine" data-cid="' + s.id + '" data-field="temps" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)"></div>';
+      html += '<div class="fc calc"><label>Charges pat. est. (~45%)</label><div class="fval gold">' + ((s.brut||0)*0.45).toFixed(0) + ' &euro;/mois</div></div>';
+      html += '</div>';
+
+      html += '<div class="card-sect">Gestion</div>';
+      html += '<div class="fgrid c2">';
+      html += '<div class="fc"><label>Gere par</label><div class="fval">' + (soc.cab_nom || 'Cabinet comptable — voir fiche societe') + '</div></div>';
+      html += '<div class="fc"><label>Notes</label><input value="' + (s.notes||'') + '" placeholder="ex. mi-temps therapeutique, anciennete..." data-cid="' + s.id + '" data-field="notes" onchange="uCDI(this.dataset.cid,this.dataset.field,this.value)"></div>';
+      html += '</div>';
+      html += '<div class="card-foot"><span style="font-size:10px;color:var(--t4)">Bulletins et DSN geres par le cabinet — hors TESE</span></div>';
+      html += '</div>';
+      return html;
+    }).join('');
+  }
+
+  body.innerHTML = hdr + infoCab + content;
+}
+
+function ajouterCDI() {
+  var soc = getSoc(); if (!soc) { toast('Selectionnez une societe'); return; }
+  if (!soc.cdi) soc.cdi = [];
+  var id = 'CDI' + Date.now().toString().slice(-6);
+  soc.cdi.push({ id:id, nom:'', prenom:'', poste:'', entree:'', brut:'', temps:'', notes:'' });
+  save(); renderCDI();
+  setTimeout(function(){ var el=document.getElementById('cdi-'+id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }, 60);
+  toast('Nouveau CDI ajoute');
+}
+
+function uCDI(id, key, val) {
+  var soc = getSoc(); if (!soc) return;
+  if (!soc.cdi) soc.cdi = [];
+  var s = soc.cdi.find(function(x){ return x.id===id; }); if (!s) return;
+  s[key] = val;
+  // Mettre a jour les charges affichees sans re-render
+  if (key === 'brut') {
+    var card = document.getElementById('cdi-'+id);
+    if (card) {
+      var charges = card.querySelectorAll('.fval.gold');
+      if (charges.length) charges[0].textContent = ((parseFloat(val)||0)*0.45).toFixed(0) + ' €/mois';
+    }
+  }
+  save();
+}
+
+function supprimerCDI(id) {
+  var soc = getSoc(); if (!soc) return;
+  if (!soc.cdi) return;
+  var s = soc.cdi.find(function(x){ return x.id===id; });
+  var nom = s ? (s.prenom+' '+s.nom) : 'ce salarie';
+  if (!confirm('Supprimer ' + nom + ' ?')) return;
+  soc.cdi = soc.cdi.filter(function(x){ return x.id!==id; });
+  save(); renderCDI(); renderDashboard();
+  toast(nom + ' supprime');
+}
+
+// ═══ DONNEES ═══
+function renderDonnees() {
+  var body = document.getElementById('page-donnees');
+  var stats = Object.values(db.societes).map(function(s){
+    return s.raison+' : '+s.salaries.length+' sal. - '+s.bulletins.length+' bul.';
+  }).join('<br>') || 'Aucune donnee';
+
+  var html = '<div class="page-head"><div class="page-head-l"><div class="page-title">Donnees &amp; Export</div><div class="page-sub">Sauvegarde locale, import/export JSON et PDF</div></div></div>';
+  html += '<div class="g2">';
+  html += '<div>';
+  html += '<div class="card" style="margin-bottom:14px"><div class="card-head"><div class="card-title">Persistance localStorage</div></div>';
+  html += '<div class="card-body"><div class="alert alert-ok" style="margin-bottom:10px"><span>&#10003;</span><span>Donnees sauvegardees automatiquement dans ce navigateur.</span></div>';
+  html += '<div style="font-family:\'DM Mono\',monospace;font-size:10px;color:var(--t3);background:var(--s2);border-radius:var(--r);padding:10px 12px;line-height:1.8;margin-bottom:12px">' + stats + '</div>';
+  html += '<button class="btn btn-danger btn-sm" onclick="clearAll()">&#10005; Effacer toutes les donnees</button>'
+  + '<button class="btn btn-sec btn-sm" style="margin-top:8px" onclick="changerPIN()">&#9679;&#9679;&#9679;&#9679; Changer le code d\'acces (session en cours)</button>';
+  html += '</div></div>';
+  html += '<div class="card"><div class="card-head"><div class="card-title">Import / Export JSON</div></div>';
+  html += '<div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap">';
+  html += '<button class="btn btn-green btn-sm" onclick="exportJSON()">&#8595; Telecharger JSON</button>';
+  html += '<label class="btn btn-sec btn-sm" style="cursor:pointer">&#8593; Importer JSON<input type="file" accept=".json" onchange="importJSON(event)" style="display:none"></label>';
+  html += '</div></div>';
+  html += '</div>';
+  html += '<div class="card"><div class="card-head"><div class="card-title">Exports PDF</div></div>';
+  html += '<div class="card-body" style="display:flex;flex-direction:column;gap:8px">';
+  html += '<button class="btn btn-gold btn-sm" onclick="pdfComplet()">&#9156; Dossier complet — societe active</button>';
+  html += '<button class="btn btn-sec btn-sm" onclick="pdfBulletins()">&#9156; Tous les bulletins</button>';
+  html += '<button class="btn btn-sec btn-sm" onclick="pdfCharges()">&#9156; Recapitulatif charges</button>';
+  html += '<button class="btn btn-sec btn-sm" onclick="pdfCalendrier()">&#9156; Calendrier RH</button>';
+  html += '<button class="btn btn-sec btn-sm" onclick="pdfToutesSocietes()">&#9156; Synthese toutes societes</button>';
+  html += '</div></div>';
+  html += '</div>';
+  body.innerHTML = html;
+}
+
+function clearAll() {
+  if (!confirm('Effacer TOUTES les donnees ?')) return;
+  localStorage.removeItem(SK);
+  db = { curId:'SOC_MONTCLAR', societes:{ SOC_MONTCLAR: JSON.parse(JSON.stringify(MONTCLAR)) } };
+  curId = 'SOC_MONTCLAR';
+  save(); renderSocList(); renderDashboard(); renderDonnees();
+  toast('Donnees reinitialisees — Montclar SAS restauree');
+}
+
+function exportJSON() {
+  var blob = new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tese_sauvegarde_' + new Date().toISOString().slice(0,16).replace('T','_').replace(/:/g,'-') + '.json';
+  a.click(); toast('JSON exporte');
+}
+
+function importJSON(evt) {
+  var file = evt.target.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var imp = JSON.parse(e.target.result);
+      if (!confirm('Importer ' + Object.keys(imp.societes||{}).length + ' societe(s) ?')) return;
+      db = Object.assign({curId:null,societes:{}}, imp);
+      curId = db.curId || Object.keys(db.societes)[0] || null;
+      save(); renderSocList(); renderDashboard(); renderDonnees();
+      toast('Import reussi');
+    } catch(err) { toast('Fichier JSON invalide'); }
+  };
+  reader.readAsText(file);
+}
+
+// ═══ PDF (simplifie) ═══
+function mkPDF() {
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  var W=210, M=15, now=new Date().toLocaleDateString('fr-FR'), soc=getSoc();
+  function hdr(t,s2){
+    doc.setFillColor(13,13,12); doc.rect(0,0,W,24,'F');
+    doc.setTextColor(200,168,106); doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('TESE MANAGER',M,9);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(94,92,86); doc.text('Multi-societes',M,14);
+    doc.setTextColor(200,168,106); doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.text(t,M,20);
+    if(s2){doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(94,92,86);doc.text(s2,W-M,20,{align:'right'});}
+    doc.setDrawColor(40,40,31); doc.line(M,26,W-M,26); return 32;
+  }
+  function ebox(y){
+    if(!soc)return y;
+    doc.setFillColor(26,26,24); doc.roundedRect(M,y,W-M*2,17,2,2,'F');
+    doc.setTextColor(158,156,148); doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text((soc.raison||'—')+'  ·  SIRET : '+(soc.siret||'—')+'  ·  '+(soc.adresse||''),M+3,y+5.5);
+    doc.text('Responsable : '+(soc.prenom||'')+' '+(soc.nom||'')+'  ·  '+(soc.email||''),M+3,y+11);
+    return y+21;
+  }
+  function sec(t,y){
+    doc.setFillColor(34,34,32); doc.rect(M,y,W-M*2,5.5,'F');
+    doc.setTextColor(200,168,106); doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.text(t.toUpperCase(),M+2,y+4);
+    return y+8;
+  }
+  function row(k,v,y,acc){
+    doc.setTextColor(158,156,148); doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.text(k,M+2,y);
+    doc.setTextColor(acc?200:230,acc?168:228,acc?106:222); doc.setFont('helvetica',acc?'bold':'normal'); doc.text(String(v),W-M-2,y,{align:'right'});
+    doc.setDrawColor(40,40,31); doc.line(M,y+2,W-M,y+2); return y+6.5;
+  }
+  function ftr(){
+    var pg=doc.internal.getNumberOfPages();
+    for(var i=1;i<=pg;i++){doc.setPage(i);doc.setTextColor(60,58,54);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.text('TESE Manager · '+now,M,289);doc.text(i+'/'+pg,W-M,289,{align:'right'});}
+  }
+  function tbl(y,head,rows2){
+    doc.autoTable({startY:y,margin:{left:M,right:M},head:[head],body:rows2,styles:{fontSize:7,cellPadding:2.5,textColor:[230,228,222],fillColor:[26,26,24],lineColor:[40,40,31],lineWidth:.1},headStyles:{fillColor:[34,34,32],textColor:[200,168,106],fontStyle:'bold'},alternateRowStyles:{fillColor:[20,20,18]}});
+    return doc.lastAutoTable.finalY+4;
+  }
+  return {doc:doc,W:W,M:M,now:now,soc:soc,hdr:hdr,ebox:ebox,sec:sec,row:row,ftr:ftr,tbl:tbl};
+}
+
+function pdfDashboard(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc; var y=p.hdr('TABLEAU DE BORD',soc?soc.raison:'');
+  if(soc){y=p.ebox(y);y=p.sec('Indicateurs',y);var tb=soc.salaries.reduce(function(a,s){return a+(s.brut||0);},0);y=p.row('TESE',{non_active:'Non active',en_cours:'En cours',actif:'Actif'}[soc.teseStatus]||'—',y);y=p.row('Salaries',String(soc.salaries.length),y);y=p.row('Bulletins',String(soc.bulletins.length),y);y=p.row('Charges est.',(tb*0.45).toFixed(0)+' EUR',y,true);}
+  var socs=Object.values(db.societes);if(socs.length){y+=3;y=p.sec('Toutes societes',y);p.tbl(y,['Societe','SIRET','TESE','Sal.','Bul.','Charges'],socs.map(function(s){var tb2=s.salaries.reduce(function(a,x){return a+(x.brut||0);},0);return[s.raison||'—',s.siret||'—',{non_active:'Non active',en_cours:'En cours',actif:'Actif'}[s.teseStatus]||'—',String(s.salaries.length),String(s.bulletins.length),(tb2*0.45).toFixed(0)+' EUR'];}));}
+  p.ftr();doc.save('dashboard_'+p.now.replace(/\//g,'-')+'.pdf');toast('Dashboard PDF');
+}
+function pdfActivation(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc){toast('Aucune societe');return;}
+  var y=p.hdr('DOSSIER ACTIVATION TESE',p.now);y=p.ebox(y);y=p.sec('Entreprise',y);
+  y=p.row('Raison sociale',soc.raison||'—',y);y=p.row('SIRET',soc.siret||'—',y);y=p.row('NAF',soc.naf||'—',y);y=p.row('CCN',soc.ccn||'—',y);y=p.row('Adresse',soc.adresse||'—',y);
+  y+=2;y=p.sec('Responsable',y);y=p.row('Nom',(soc.prenom||'')+' '+(soc.nom||''),y);y=p.row('Email',soc.email||'—',y);y=p.row('IBAN',soc.iban||'—',y);y=p.row('Medecine travail',sstLabel(soc.sst),y);
+  y+=2;y=p.sec('Statut',y);y=p.row('Statut TESE',{non_active:'Non active',en_cours:'En cours (4-6 sem.)',actif:'Actif'}[soc.teseStatus]||'—',y,true);
+  p.ftr();doc.save('activation_'+p.now.replace(/\//g,'-')+'.pdf');toast('Activation PDF');
+}
+function pdfSalaries(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc){toast('Aucune societe');return;}
+  var y=p.hdr('SALARIES',soc.raison);y=p.ebox(y);
+  p.tbl(y,['Nom','Prenom','NIR','Poste','Debut','Fin','Taux','Brut'],soc.salaries.map(function(s){return[s.nom,s.prenom,s.nir||'—',s.poste,s.debut,s.fin,s.taux+'EUR/h',(s.brut||0).toFixed(2)+' EUR'];}));
+  p.ftr();doc.save('salaries_'+p.now.replace(/\//g,'-')+'.pdf');toast('Salaries PDF');
+}
+function pdfContrats(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc){toast('Aucune societe');return;}
+  var y=p.hdr('CONTRATS CDD',soc.raison);y=p.ebox(y);
+  p.tbl(y,['Salarie','Debut','Fin','Motif','Deadline DPAE'],soc.salaries.map(function(s){var d1=new Date(s.debut),dp=new Date(d1);dp.setDate(dp.getDate()-1);return[s.prenom+' '+s.nom,s.debut,s.fin,motifLabel(s.motif),dp.toLocaleDateString('fr-FR')];}));
+  p.ftr();doc.save('contrats_'+p.now.replace(/\//g,'-')+'.pdf');toast('Contrats PDF');
+}
+function pdfBulletinSingle(bulId){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc)return;
+  var b=soc.bulletins.find(function(x){return x.id===bulId;});if(!b)return;
+  var s=b.salarie,d=b.data,y=p.hdr('BULLETIN DE PAIE',s.prenom+' '+s.nom+' · '+b.date);
+  y=p.ebox(y);y=p.sec('Salarie',y);y=p.row('Nom',s.prenom+' '+s.nom,y);y=p.row('NIR',s.nir||'—',y);y=p.row('Poste',s.poste,y);
+  y+=2;y=p.sec('Remuneration',y);y=p.row('Heures',d.heures+'h x '+d.taux.toFixed(2)+' EUR/h',y);if(d.prime)y=p.row('Prime',d.prime.toFixed(2)+' EUR',y);y=p.row('BRUT',d.brut.toFixed(2)+' EUR',y,true);
+  y+=2;y=p.sec('Cotisations salariales',y);y=p.row('Secu sociale','- '+(d.brut*0.0785).toFixed(2)+' EUR',y);y=p.row('AGIRC-ARRCO','- '+(d.brut*0.033).toFixed(2)+' EUR',y);y=p.row('Chomage','- '+(d.brut*0.024).toFixed(2)+' EUR',y);y=p.row('CSG/CRDS','- '+(d.brut*0.0927).toFixed(2)+' EUR',y);y=p.row('Total cotisations','- '+d.cs.toFixed(2)+' EUR',y,true);
+  y+=3;doc.setFillColor(200,168,106);doc.roundedRect(p.M,y,p.W-p.M*2,10,2,2,'F');doc.setTextColor(13,13,12);doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('NET A PAYER AVANT IMPOT',p.M+3,y+7);doc.text(d.net.toFixed(2)+' EUR',p.W-p.M-3,y+7,{align:'right'});
+  y+=14;y=p.row('ICP 10%',d.icp.toFixed(2)+' EUR',y);y=p.row('NET TOTAL VERSE',(d.net+d.icp).toFixed(2)+' EUR',y,true);
+  p.ftr();doc.save('bulletin_'+s.nom+'_'+s.debut+'.pdf');toast('Bulletin PDF');
+}
+function pdfBulletins(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc||!soc.bulletins.length){toast('Aucun bulletin');return;}
+  soc.bulletins.forEach(function(b,i){
+    if(i>0)doc.addPage();var s=b.salarie,d=b.data,y=p.hdr('BULLETIN',s.prenom+' '+s.nom);
+    y=p.ebox(y);y=p.sec('Remuneration',y);y=p.row('Periode',s.debut+' -> '+s.fin,y);y=p.row('Brut',d.brut.toFixed(2)+' EUR',y,true);y=p.row('Cotisations','- '+d.cs.toFixed(2)+' EUR',y);y=p.row('Net IR',d.net.toFixed(2)+' EUR',y,true);y=p.row('ICP',d.icp.toFixed(2)+' EUR',y);y=p.row('NET TOTAL',(d.net+d.icp).toFixed(2)+' EUR',y,true);
+  });
+  p.ftr();doc.save('bulletins_'+p.now.replace(/\//g,'-')+'.pdf');toast(soc.bulletins.length+' bulletins PDF');
+}
+function pdfDSN(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc||!soc.bulletins.length){toast('Aucune DSN');return;}
+  var tb=soc.bulletins.reduce(function(a,b){return a+b.data.brut;},0),y=p.hdr('DSN',p.now);
+  y=p.ebox(y);y=p.sec('En-tete',y);y=p.row('SIRET',soc.siret||'—',y);y=p.row('Type','DSN mensuelle TESE',y);y=p.row('Salaries',String(soc.bulletins.length),y);y=p.row('Masse brute',tb.toFixed(2)+' EUR',y,true);
+  p.tbl(y+3,['Salarie','NIR','Contrat','Brut','Cot.','Net'],soc.bulletins.map(function(b){return[b.salarie.prenom+' '+b.salarie.nom,b.salarie.nir||'—','CDD '+b.salarie.debut+'->'+b.salarie.fin,b.data.brut.toFixed(2)+' EUR',b.data.cs.toFixed(2)+' EUR',b.data.net.toFixed(2)+' EUR'];}));
+  p.ftr();doc.save('dsn_'+p.now.replace(/\//g,'-')+'.pdf');toast('DSN PDF');
+}
+function pdfCharges(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc||!soc.bulletins.length){toast('Aucune donnee');return;}
+  var tb=soc.bulletins.reduce(function(a,b){return a+b.data.brut;},0),y=p.hdr('CHARGES',p.now);
+  y=p.ebox(y);y=p.sec('Prelevement TESE',y);y=p.row('URSSAF',(tb*0.4382).toFixed(2)+' EUR',y);y=p.row('AGIRC-ARRCO',(tb*0.086).toFixed(2)+' EUR',y);y=p.row('France Travail',(tb*0.0405).toFixed(2)+' EUR',y);y=p.row('TOTAL TESE',(tb*0.45+tb*0.2282).toFixed(2)+' EUR',y,true);
+  p.tbl(y+3,['Salarie','Brut','Cot.','Net','ICP','Total'],soc.bulletins.map(function(b){return[b.salarie.prenom+' '+b.salarie.nom,b.data.brut.toFixed(2)+' EUR',b.data.cs.toFixed(2)+' EUR',b.data.net.toFixed(2)+' EUR',b.data.icp.toFixed(2)+' EUR',(b.data.net+b.data.icp).toFixed(2)+' EUR'];}));
+  p.ftr();doc.save('charges_'+p.now.replace(/\//g,'-')+'.pdf');toast('Charges PDF');
+}
+function pdfCalendrier(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc||!soc.salaries.length){toast('Aucun salarie');return;}
+  var evts=[],y=p.hdr('CALENDRIER RH',p.now);y=p.ebox(y);
+  soc.salaries.forEach(function(s){var d1=new Date(s.debut),dp=new Date(d1),ct=new Date(d1),le5=new Date(new Date(s.fin).getFullYear(),new Date(s.fin).getMonth()+1,5),le15=new Date(new Date(s.fin).getFullYear(),new Date(s.fin).getMonth()+1,15);dp.setDate(dp.getDate()-1);ct.setDate(ct.getDate()+2);var f=function(d){return d.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});};evts.push([f(dp),'DPAE — '+s.prenom+' '+s.nom,'Avant debut']);evts.push([f(d1),'Debut CDD — '+s.prenom+' '+s.nom,s.poste||'']);evts.push([f(ct),'Contrat signe — '+s.prenom+' '+s.nom,'2 jours ouvrables']);evts.push([f(new Date(s.fin)),'Fin CDD — '+s.prenom+' '+s.nom,'Solde tout compte']);evts.push([f(le5),'Volet social — '+s.prenom+' '+s.nom,'Avant le 5']);evts.push([f(le15),'Prelevement charges TESE','Automatique']);});
+  p.tbl(y,['Date','Evenement','Action'],evts);
+  p.ftr();doc.save('calendrier_'+p.now.replace(/\//g,'-')+'.pdf');toast('Calendrier PDF');
+}
+function pdfToutesSocietes(){
+  var p=mkPDF(),doc=p.doc,socs=Object.values(db.societes);if(!socs.length){toast('Aucune societe');return;}
+  var y=p.hdr('SYNTHESE TOUTES SOCIETES',p.now);
+  p.tbl(y+2,['Societe','SIRET','TESE','Sal.','Bul.','Masse','Charges','Cout total'],socs.map(function(s){var tb=s.bulletins.reduce(function(a,b){return a+b.data.brut;},0);return[s.raison||'—',s.siret||'—',{non_active:'Non active',en_cours:'En cours',actif:'Actif'}[s.teseStatus]||'—',String(s.salaries.length),String(s.bulletins.length),tb.toFixed(2)+' EUR',(tb*0.45).toFixed(2)+' EUR',(tb+tb*0.45+tb*0.10).toFixed(2)+' EUR'];}));
+  p.ftr();doc.save('synthese_'+p.now.replace(/\//g,'-')+'.pdf');toast('Synthese PDF');
+}
+function pdfComplet(){
+  var p=mkPDF(),soc=p.soc,doc=p.doc;if(!soc){toast('Aucune societe');return;}
+  var tb=soc.bulletins.reduce(function(a,b){return a+b.data.brut;},0),y=p.hdr('DOSSIER COMPLET',soc.raison);
+  y=p.ebox(y);y=p.sec('Resume',y);y=p.row('TESE',{non_active:'Non active',en_cours:'En cours',actif:'Actif'}[soc.teseStatus]||'—',y);y=p.row('Salaries',String(soc.salaries.length),y);y=p.row('Bulletins',String(soc.bulletins.length),y);y=p.row('Cout total',(tb+tb*0.45+tb*0.10).toFixed(2)+' EUR',y,true);
+  if(soc.salaries.length){doc.addPage();var y2=p.hdr('SALARIES',soc.raison);p.tbl(y2+2,['Salarie','Poste','Debut','Fin','Brut'],soc.salaries.map(function(s){return[s.prenom+' '+s.nom,s.poste,s.debut,s.fin,(s.brut||0).toFixed(2)+' EUR'];}));}
+  soc.bulletins.forEach(function(b){doc.addPage();var s=b.salarie,d=b.data,y3=p.hdr('BULLETIN',s.prenom+' '+s.nom);y3=p.sec('Remuneration',y3);y3=p.row('Brut',d.brut.toFixed(2)+' EUR',y3,true);y3=p.row('Cotisations','- '+d.cs.toFixed(2)+' EUR',y3);y3=p.row('Net IR',d.net.toFixed(2)+' EUR',y3,true);y3=p.row('ICP',d.icp.toFixed(2)+' EUR',y3);y3=p.row('NET TOTAL',(d.net+d.icp).toFixed(2)+' EUR',y3,true);});
+  p.ftr();doc.save('dossier_'+( soc.siret||'tese')+'_'+p.now.replace(/\//g,'-')+'.pdf');toast('Dossier complet PDF ('+doc.internal.getNumberOfPages()+' pages)');
+}
+
+
+// ═══ AUTHENTIFICATION PIN ═══
+var PIN_KEY = 'tese_pin';
+var DEFAULT_PIN = '8391'; // PIN par defaut — a changer dans Donnees & Export
+
+function resetPIN() {
+  if (!confirm('Reinitialiser le code au code par defaut (1952) ?')) return;
+  DEFAULT_PIN = '8391';
+  document.getElementById('pin-error').style.display = 'none';
+  var input = document.getElementById('pin-input');
+  if (input) { input.value = ''; input.focus(); }
+  var msg = document.getElementById('pin-first-msg');
+  toast('Code reinitialise — utilisez le code par defaut');
+}
+
+function getPIN() {
+  return DEFAULT_PIN;
+}
+
+function verifierPIN() {
+  var input = document.getElementById('pin-input');
+  var val = input ? input.value.trim() : '';
+  var stored = getPIN();
+  if (val === stored) {
+    document.getElementById('login-screen').style.display = 'none';
+    sessionStorage.setItem('tese_auth', '1');
+    input.value = '';
+  } else {
+    document.getElementById('pin-error').style.display = 'block';
+    input.value = '';
+    input.focus();
+  }
+}
+
+function changerPIN() {
+  var overlay = document.createElement('div');
+  overlay.id = 'pin-change-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:12px;padding:28px 32px;width:320px;max-width:92vw;box-shadow:0 4px 24px rgba(0,0,0,.15)">'
+    + '<div style="font-family:\'Syne\',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;color:#1a1814">Changer le code d\'acces</div>'
+    + '<div style="margin-bottom:12px"><label style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#6a6860;display:block;margin-bottom:4px">Code actuel</label>'
+    + '<input id="pc-old" type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="width:100%;padding:10px 12px;border:1px solid #dedad4;border-radius:6px;font-size:18px;font-family:monospace;letter-spacing:.2em;outline:none;color:#1a1814"></div>'
+    + '<div style="margin-bottom:12px"><label style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#6a6860;display:block;margin-bottom:4px">Nouveau code (4 a 8 chiffres)</label>'
+    + '<input id="pc-new" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" style="width:100%;padding:10px 12px;border:1px solid #dedad4;border-radius:6px;font-size:18px;font-family:monospace;letter-spacing:.2em;outline:none;color:#1a1814"></div>'
+    + '<div style="margin-bottom:20px"><label style="font-family:monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#6a6860;display:block;margin-bottom:4px">Confirmer le nouveau code</label>'
+    + '<input id="pc-conf" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password" style="width:100%;padding:10px 12px;border:1px solid #dedad4;border-radius:6px;font-size:18px;font-family:monospace;letter-spacing:.2em;outline:none;color:#1a1814"></div>'
+    + '<div id="pc-err" style="display:none;color:#aa3030;font-size:11px;font-family:monospace;margin-bottom:12px;padding:8px;background:#fff0f0;border-radius:4px"></div>'
+    + '<div style="display:flex;gap:8px">'
+    + '<button id="pc-btn-ok" style="flex:1;padding:10px;background:#8a6a2a;color:#fff;border:none;border-radius:6px;font-size:13px;font-family:\'DM Sans\',sans-serif;font-weight:600;cursor:pointer">Confirmer</button>'
+    + '<button id="pc-btn-cancel" style="flex:1;padding:10px;background:#eeecea;color:#3a3830;border:1px solid #dedad4;border-radius:6px;font-size:13px;font-family:\'DM Sans\',sans-serif;cursor:pointer">Annuler</button>'
+    + '</div></div>';
+  document.body.appendChild(overlay);
+
+  // Attacher les events apres insertion dans le DOM
+  setTimeout(function() {
+    var btnOk     = document.getElementById('pc-btn-ok');
+    var btnCancel = document.getElementById('pc-btn-cancel');
+    if (btnOk)     btnOk.addEventListener('click', validerChangePIN);
+    if (btnCancel) btnCancel.addEventListener('click', function(){ var o=document.getElementById('pin-change-overlay'); if(o) o.remove(); });
+    var el = document.getElementById('pc-old');
+    if (el) el.focus();
+  }, 50);
+}
+
+function validerChangePIN() {
+  var oldEl  = document.getElementById('pc-old');
+  var newEl  = document.getElementById('pc-new');
+  var confEl = document.getElementById('pc-conf');
+  var errEl  = document.getElementById('pc-err');
+  if (!oldEl || !newEl || !confEl) return;
+
+  var ancien   = oldEl.value.trim();
+  var nouveau  = newEl.value.trim();
+  var confirm2 = confEl.value.trim();
+  var stored   = getPIN();
+
+  function showErr(msg) {
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+  }
+
+  if (ancien !== stored) { showErr('Code actuel incorrect'); oldEl.value = ''; oldEl.focus(); return; }
+  if (nouveau.length < 4) { showErr('Code trop court — minimum 4 chiffres'); newEl.focus(); return; }
+  if (nouveau !== confirm2) { showErr('Les deux nouveaux codes ne correspondent pas'); confEl.value = ''; confEl.focus(); return; }
+
+  DEFAULT_PIN = nouveau;
+  var overlay = document.getElementById('pin-change-overlay');
+  if (overlay) overlay.remove();
+  toast('Code d\'acces modifie avec succes');
+}
+
+function checkAuth() {
+  if (sessionStorage.getItem('tese_auth') === '1') {
+    document.getElementById('login-screen').style.display = 'none';
+    return;
+  }
+  // Premiere ouverture sur cet appareil — afficher message
+
+  document.getElementById('login-screen').style.display = 'flex';
+  setTimeout(function(){ var el=document.getElementById('pin-input'); if(el) el.focus(); }, 100);
+}
+
+// ═══ INIT ═══
+initDB();
+renderSocList();
+renderDashboard();
+refreshInfo();
+updateBadge();
+checkAuth();
+</script>
+
+<!-- ECRAN DE CONNEXION -->
+<div id="login-screen" style="position:fixed;inset:0;background:#f4f2ee;z-index:1000;display:flex;align-items:center;justify-content:center;">
+  <div style="background:#fff;border:1px solid #dedad4;border-radius:14px;padding:40px 48px;width:340px;max-width:92vw;box-shadow:0 4px 24px rgba(0,0,0,.1);text-align:center">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#6a4e1a;letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px">TESE Manager</div>
+    <div style="font-family:monospace;font-size:10px;color:#9a9890;margin-bottom:32px;letter-spacing:.08em">Acces securise</div>
+<div style="font-family:monospace;font-size:11px;color:#6a6860;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Code d&#39;acces</div>
+    <input id="pin-input" type="password" inputmode="numeric" maxlength="8"
+      style="width:100%;text-align:center;font-size:28px;font-family:monospace;letter-spacing:.3em;padding:12px 16px;border:2px solid #dedad4;border-radius:8px;outline:none;color:#1a1814;background:#fafaf8;margin-bottom:8px"
+      placeholder="&#9679;&#9679;&#9679;&#9679;"
+      onkeydown="if(event.key==='Enter')verifierPIN()"
+      oninput="document.getElementById('pin-error').style.display='none'">
+    <div id="pin-error" style="display:none;color:#aa3030;font-size:11px;font-family:monospace;margin-bottom:8px">Code incorrect</div>
+    <button onclick="verifierPIN()"
+      style="width:100%;padding:12px;background:#8a6a2a;color:#fff;border:none;border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;font-weight:600;cursor:pointer;margin-top:8px;transition:background .12s"
+      onmouseover="this.style.background='#6a4e1a'" onmouseout="this.style.background='#8a6a2a'">
+      Connexion
+    </button>
+    <div style="margin-top:16px;font-size:10px;color:#b0ada8;font-family:monospace">Montclar SAS &bull; Le Couvent Marseille</div>
+    <div style="margin-top:12px"><button onclick="resetPIN()" style="background:none;border:none;color:#b0ada8;font-size:10px;font-family:monospace;cursor:pointer;text-decoration:underline">Code oublie ? Reinitialiser</button></div>
+  </div>
+</div>
+</body>
+</html>
